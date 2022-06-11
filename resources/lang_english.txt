@@ -1,0 +1,169 @@
+#5
+#titles
+#5
+JStreamline
+Selections
+Jsons
+Message
+add to operation
+#16
+#menus
+#11
+File
+Reset
+Options
+Language
+Exit
+Resolution
+Types
+Basic Item
+Tool Set
+Armor Set
+Blocks
+#28
+#resolutions
+#12
+Default
+800x600
+960x720
+1024x768
+1280x960
+1400x1050
+1440x1080
+1600x1200
+1856x1392
+1920x1440
+2048x1536
+3840x2160
+#31
+#Messages
+#3
+FAILED.
+saved.
+save to: 
+#34
+#UI display
+#basic item
+#3
+Mod_ID
+Texture Name
+Item Name
+#43
+#tool set
+#9
+Mod_ID
+Texture Prefix
+Set Name
+PostFixes
+Sword
+Axe
+Shovel
+Pickaxe
+Hoe
+#50
+#armor set
+#7
+Mod_ID
+Texture Prefix
+Set Name
+Helmet
+Chestplate
+Leggings
+Boots
+#53
+#block set
+#3
+Mod_ID
+Texture Name
+BlockName
+#60
+#UI options
+#7
+Save As File
+Select the MOD_ID folder of your mod in your assets folder. Files will be saved in their proper folders
+Save File
+Saves all at last save location in proper folders
+Save
+submit
+Save All
+#72
+#default values 
+#12
+Mod_ID
+texturename
+name
+sword
+axe
+shovel
+pickaxe
+hoe
+helmet
+chestplate
+leggings
+boots
+#81
+#json text basic
+#9
+{
+"parent": "
+",
+"textures": {
+"layer0": "
+:items/
+"
+}
+}
+#90
+#json text tools
+#9
+{
+"parent": "
+",
+"textures": {
+"layer0": "
+:items/
+"
+}
+}
+#99
+#json text armor
+#9
+{
+"parent": "
+",
+"textures": {
+"layer0": "
+:items/
+"
+}
+}
+#104
+#json text block item
+#5
+{
+"parent": "
+:
+"
+}
+#111
+#json text blockstate
+#7
+{
+"variants": {
+"normal": { "model": "
+:
+" }
+}
+}
+#120
+#json text block
+#9
+{
+"parent": "
+",
+"textures": {
+"all": "
+:blocks/
+"
+}
+}
