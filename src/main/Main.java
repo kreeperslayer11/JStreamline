@@ -32,7 +32,8 @@ public class Main
 			
 			if(scan.hasNext())
 			{
-				path = scan.next();
+				path = scan.nextLine();
+				
 			}
 			if(scan.hasNext())
 			{
