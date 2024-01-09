@@ -1,0 +1,14 @@
+package templates.json.models;
+
+import templates.json.JsonSerializable;
+import util.JsonType;
+
+public class BlockItem extends JsonSerializable
+{
+	String parent;
+	
+	public BlockItem(String modid, String texture)
+	{
+		this.parent = modid + ":" + JsonType.BLOCK_ITEM.parent + texture;
+	}
+}

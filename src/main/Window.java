@@ -15,14 +15,16 @@ import java.util.Scanner;
 
 import javax.swing.*;
 
+import util.JsonFlag;
 import util.JsonType;
 import util.Localization;
+import util.RefInt;
 import util.Reference;
 import util.Resolution;
 
 public class Window 
 {
-	private int flag;
+	private JsonFlag flag;
 	private JFrame frame;
 	private JPanel contentPane;
 	private Resolution res;
@@ -34,9 +36,14 @@ public class Window
 	private int currentIndex = -1;
 	private String path, message, mod_id, pref, name;
 	
+	private RefInt nameField = new RefInt(), textureField  = new RefInt(), modidField  = new RefInt(), 
+			swordField = new RefInt(), axeField = new RefInt(), shovelField = new RefInt(), 
+			pickaxeField = new RefInt(), hoeField = new RefInt(), helmetField = new RefInt(), 
+			chestplateField = new RefInt(), leggingsField = new RefInt(), bootsField = new RefInt();
+	
 	public Window(JFrame frame, JPanel contentPane, Resolution res, Localization local, String path, String reso)
 	{
-		this.flag = -1;
+		this.flag = JsonFlag.Empty;
 		this.frame = frame;
 		this.contentPane = contentPane;
 		this.res = res;
@@ -57,6 +64,7 @@ public class Window
 		else
 		{
 			String[] s = reso.split("x");
+			res.resolutionChange(res.getIndexFromSaveData(s));
 			frame.setSize(Integer.parseInt(s[0]), Integer.parseInt(s[1]));
 		}
 		
@@ -67,128 +75,73 @@ public class Window
 		tabs = new JTabbedPane(JTabbedPane.TOP);
 	}
 	
+	private void makeMenuOption(JMenu category, String optionText, ActionListener listener)
+	{
+		JMenuItem option = new JMenuItem(optionText);
+		category.add(option);
+    	fontChange(option);
+    	if (listener != null)
+    	{
+    		option.addActionListener(listener);    		
+    	}
+	}
+	
+	private JMenu makeMenu(String menuText, int mnumonic)
+	{
+		JMenu menu = new JMenu(menuText);
+    	fontChange(menu);
+    	if (mnumonic != -1)
+    	{
+    		menu.setMnemonic(mnumonic);    		
+    	}
+    	return menu;
+	}
+	
+	private JMenu makeMenu(JMenu SubsetOf, String menuText)
+	{
+		return (JMenu)SubsetOf.add(makeMenu(menuText, -1));
+	}
+	
+	private JMenu makeMenu(JMenuBar SubsetOf, String menuText, int mnumonic)
+	{
+		return SubsetOf.add(makeMenu(menuText, mnumonic));
+	}
+	
 	public void makeMenus()
 	{
 		JMenuBar menuBar;
     	JMenu menu;
     	JMenu pre;
     	JMenu sub;
-    	JMenuItem menuItem;
     	
     	menuBar = new JMenuBar();
     	frame.setJMenuBar(menuBar);
     	
     	//FILE=================================================================
-    	menu = new JMenu(local.getMenus(0));
-    	fontChange(menu);
-    	menu.setMnemonic(KeyEvent.VK_F);
-    	menuBar.add(menu);
+    	menu = makeMenu(menuBar, local.getMenus(0), KeyEvent.VK_F);
     	//FILE SUB MENU=========================================================
-    	//reset
-    	menuItem = new JMenuItem(local.getMenus(1));
-    	fontChange(menuItem);
-    	menuItem.addActionListener( makeResetListener() );
-    	menu.add(menuItem);
+    	makeMenuOption(menu, local.getMenus(1), makeResetListener());//reset
     	
-    	//options
-    	pre = new JMenu(local.getMenus(2));
-    	fontChange(pre);
+    	pre = makeMenu(menu, local.getMenus(2));//options
     	
-    	//resolution
-    	sub = new JMenu(local.getMenus(5));
-    	fontChange(sub);
+    	sub = makeMenu(pre, local.getMenus(5));//resolutions
+    	for (int i = 0; i < local.getResLength(); i++)
+    	{
+    		makeMenuOption(sub, local.getRes(i), makeResolutionListener(i));//individual resolution
+    	}
     	
-    	sub.add(menuItem = new JMenuItem(local.getRes(0)));
-    	fontChange(menuItem);
-    	menuItem.addActionListener(makeResolutionListener(0));
+    	makeMenuOption(pre, local.getMenus(3), null);//language
     	
-    	sub.add(menuItem = new JMenuItem(local.getRes(1)));
-    	fontChange(menuItem);
-    	menuItem.addActionListener(makeResolutionListener(1));
-    	
-    	sub.add(menuItem = new JMenuItem(local.getRes(2)));
-    	fontChange(menuItem);
-    	menuItem.addActionListener(makeResolutionListener(2));
-    	
-    	sub.add(menuItem = new JMenuItem(local.getRes(3)));
-    	fontChange(menuItem);
-    	menuItem.addActionListener(makeResolutionListener(3));
-    	
-    	sub.add(menuItem = new JMenuItem(local.getRes(4)));
-    	fontChange(menuItem);
-    	menuItem.addActionListener(makeResolutionListener(4));
-    	
-    	sub.add(menuItem = new JMenuItem(local.getRes(5)));
-    	fontChange(menuItem);
-    	menuItem.addActionListener(makeResolutionListener(5));
-    	
-    	sub.add(menuItem = new JMenuItem(local.getRes(6)));
-    	fontChange(menuItem);
-    	menuItem.addActionListener(makeResolutionListener(6));
-    	
-    	sub.add(menuItem = new JMenuItem(local.getRes(7)));
-    	fontChange(menuItem);
-    	menuItem.addActionListener(makeResolutionListener(7));
-    	
-    	sub.add(menuItem = new JMenuItem(local.getRes(8)));
-    	fontChange(menuItem);
-    	menuItem.addActionListener(makeResolutionListener(8));
-    	
-    	sub.add(menuItem = new JMenuItem(local.getRes(9)));
-    	fontChange(menuItem);
-    	menuItem.addActionListener(makeResolutionListener(9));
-    	
-    	sub.add(menuItem = new JMenuItem(local.getRes(10)));
-    	fontChange(menuItem);
-    	menuItem.addActionListener(makeResolutionListener(10));
-    	
-    	sub.add(menuItem = new JMenuItem(local.getRes(11)));
-    	fontChange(menuItem);
-    	menuItem.addActionListener(makeResolutionListener(11));
-    	
-    	pre.add(sub);
-    	
-    	//language
-    	menuItem = new JMenuItem(local.getMenus(3));
-    	fontChange(menuItem);
-    	pre.add(menuItem);
-    	
-    	menu.add(pre);
-    	
-    	menuItem = new JMenuItem(local.getMenus(4));
-    	fontChange(menuItem);
-    	//menuItem.addActionListener(new saveListener());
-    	menu.add(menuItem);
+    	//TODO: exit listener
+    	makeMenuOption(menu, local.getMenus(4), null);//exit
     	//END FILE==============================================================
     	//TYPES=================================================================
-    	menu = new JMenu(local.getMenus(6));
-    	fontChange(menu);
-    	menu.setMnemonic(KeyEvent.VK_T);
-    	menuBar.add(menu);
+    	menu = makeMenu(menuBar, local.getMenus(6), KeyEvent.VK_T);
     	//TYPES SUB MENU========================================================
-    	//basic
-    	menuItem = new JMenuItem(local.getMenus(7));
-    	fontChange(menuItem);
-    	menuItem.addActionListener(makeTypeListener(0));
-    	menu.add(menuItem);
-    	
-    	//tool
-    	menuItem = new JMenuItem(local.getMenus(8));
-    	fontChange(menuItem);
-    	menuItem.addActionListener(makeTypeListener(1));
-    	menu.add(menuItem);
-    	
-    	//armor
-    	menuItem = new JMenuItem(local.getMenus(9));
-    	fontChange(menuItem);
-    	menuItem.addActionListener(makeTypeListener(2));
-    	menu.add(menuItem);
-    	
-    	//blocks
-    	menuItem = new JMenuItem(local.getMenus(10));
-    	fontChange(menuItem);
-    	menuItem.addActionListener(makeTypeListener(3));
-    	menu.add(menuItem);
+    	makeMenuOption(menu, local.getMenus(7), makeTypeListener(JsonFlag.BasicItem));
+    	makeMenuOption(menu, local.getMenus(8), makeTypeListener(JsonFlag.Tool));
+    	makeMenuOption(menu, local.getMenus(9), makeTypeListener(JsonFlag.Armor));
+    	makeMenuOption(menu, local.getMenus(10), makeTypeListener(JsonFlag.Block));
 	}
 	
 	private ActionListener makeResolutionListener(int num)
@@ -242,13 +195,13 @@ public class Window
     	};
 	}
 	
-	private ActionListener makeTypeListener(int num)
+	private ActionListener makeTypeListener(JsonFlag num)
 	{
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				flag = num;
 				west = makeWestRegion();
-				remakeContent(2);
+				remakeContent(BorderLayout.WEST);
 				refreshContent("");
 			}
 		};
@@ -261,7 +214,7 @@ public class Window
 				//jsons = new ArrayList<JsonPreview>();
 				jsons = new HashMap<>();
 				tabs = new JTabbedPane(JTabbedPane.TOP);
-				flag = -1;
+				flag = JsonFlag.Empty;
 				currentIndex = -1;
 				refreshContent("");
 			}
@@ -292,54 +245,50 @@ public class Window
 		updateUI();
 	}
 	
-	/**
-	 * remake all conent except for id at excpet
-	 * @param except 1 : Center |
-	 *               2 : West   |
-	 *               3 : East   |
-	 *               4 : South  |
-	 */
-	public void remakeContent(int except)
+	private JPanel addToPane(String layout)
 	{
-		if(except == 1)
+		switch (layout)
 		{
-			killContent();
-			makeMenus();
-			contentPane.add(center, BorderLayout.CENTER);
-			makeNorthRegion();
-	    	west = makeWestRegion();
-	    	east = makeEastRegion();
-	    	south = makeSouthRegion();
+			case BorderLayout.CENTER:
+				return center;
+			case BorderLayout.WEST:
+				return west;
+			case BorderLayout.EAST:
+				return east;
+			case BorderLayout.SOUTH:
+				return south;
+			default:
+				return null;
 		}
-		else if(except == 2)
+	}
+	/**
+	 * remake all content except for id at except
+	 */
+	public void remakeContent(String except)
+	{
+		killContent();
+		makeMenus();
+		if (except.equals(BorderLayout.WEST) || !except.equals(BorderLayout.CENTER) 
+				|| !except.equals(BorderLayout.EAST) || !except.equals(BorderLayout.SOUTH))
 		{
-			killContent();
-			makeMenus();
-			contentPane.add(west, BorderLayout.WEST);
-			makeNorthRegion();
-	    	center = makeCenterRegion();
-	    	east = makeEastRegion();
-	    	south = makeSouthRegion();
+			contentPane.add(addToPane(except), except);			
 		}
-		else if(except == 3)
+		makeNorthRegion();
+		if (!except.equals(BorderLayout.WEST))
 		{
-			killContent();
-			makeMenus();
-			contentPane.add(east, BorderLayout.EAST);
-			makeNorthRegion();
-	    	west = makeWestRegion();
-	    	center = makeCenterRegion();
-	    	south = makeSouthRegion();
+			west = makeWestRegion();
 		}
-		else if(except == 4)
+		if (!except.equals(BorderLayout.CENTER))
 		{
-			killContent();
-			makeMenus();
-			contentPane.add(south, BorderLayout.SOUTH);
-			makeNorthRegion();
-	    	west = makeWestRegion();
-	    	center = makeCenterRegion();
-	    	east = makeEastRegion();
+			center = makeCenterRegion();
+		}
+		if (!except.equals(BorderLayout.EAST))
+		{
+			east = makeEastRegion();
+		}
+		if (!except.equals(BorderLayout.SOUTH))
+		{
+			south = makeSouthRegion();
 		}
 	}
 	
@@ -357,7 +306,7 @@ public class Window
 		contentPane.add(label, BorderLayout.NORTH);
 	}
 	
-	private void MakeTextBox(JPanel panel, String title, String text)
+	private void MakeTextBox(JPanel panel, String title, String text, RefInt fieldId)
 	{
 		JLabel ider = new JLabel(title);
 		//ider.setBorder(BorderFactory.createEmptyBorder(0, res.getBorder() + 2, 0, 0));
@@ -368,6 +317,19 @@ public class Window
 		label.setText(text);
 		label.setMaximumSize(new Dimension(res.getWidth() / 2, res.getFontSize() * 2));
 		panel.add(label);
+		fieldId.value = panel.getComponentCount() - 1;
+	}
+	
+	private void submitButton(JPanel panel)
+	{
+		//submit
+	    JButton jbutton = new JButton(local.getUIopt(5));
+    	fontChange(jbutton);
+    	jbutton.setFocusable(false);
+	    
+	    jbutton.addActionListener( makeSubmitListener(panel, flag) );
+	    
+	    panel.add(jbutton);
 	}
 	
 	private JPanel makeWestRegion()
@@ -381,169 +343,164 @@ public class Window
 		
 		
 		//NO SELECTION
-		if(flag == -1)
+		if(flag == JsonFlag.Empty)
 		{
 			sizer.setBorder(BorderFactory.createEmptyBorder(0, res.getWidth() / 4, 0, 0));
 		    panel.add(sizer);
 		}
 		//BASIC ITEM
-		else if(flag == 0)
+		else if(flag == JsonFlag.BasicItem)
 		{
 			
 			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 40, 0, 0));
 		    panel.add(sizer);
 			
-		    //component 2
-		    MakeTextBox(panel, local.getBscItm(2), name);
-		    //component 4
-		    MakeTextBox(panel, local.getBscItm(1), pref);
-		    //component 6
-		    MakeTextBox(panel, local.getBscItm(0), mod_id);
+		    MakeTextBox(panel, local.getBscItm(2), name, nameField);
+		    MakeTextBox(panel, local.getBscItm(1), pref, textureField);
+		    MakeTextBox(panel, local.getBscItm(0), mod_id, modidField);
 		    
-		    //submit
-		    JButton jbutton = new JButton(local.getUIopt(5));
-	    	fontChange(jbutton);
-	    	jbutton.setFocusable(false);
-		    
-		    jbutton.addActionListener( makeSubmitListener(panel, flag) );
-		    
-		    panel.add(jbutton);
+		    submitButton(panel);
 		}
 		//Tool Sets
-		else if(flag == 1)
+		else if(flag == JsonFlag.Tool)
 		{
-			//JScrollPane scroll = new JScrollPane();
-			//JPanel p = new JPanel();
-			//p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-			//fontChange(p);
 			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 47, 0, 0));
 		    panel.add(sizer);
 		    
-		    //component 2
-		    MakeTextBox(panel, local.getTools(2), name);
-		    //component 4
-		    MakeTextBox(panel, local.getTools(1), pref);
-		    //component 6
-		    MakeTextBox(panel, local.getTools(0), mod_id);
+		    MakeTextBox(panel, local.getTools(2), name, nameField);
+		    MakeTextBox(panel, local.getTools(1), pref, textureField);
+		    MakeTextBox(panel, local.getTools(0), mod_id, modidField);
 		    //postfixes
 		    JLabel ider = new JLabel(local.getTools(3));
 			//ider.setBorder(BorderFactory.createEmptyBorder(0, res.getBorder() + 2, 0, 0));
 		    panel.add(ider);
-		    //component 9 sword
-			MakeTextBox(panel, local.getTools(4), local.getDefaults(3));
-		    //component 11 axe
-			MakeTextBox(panel, local.getTools(5), local.getDefaults(4));
-		    //component 13 shovel
-			MakeTextBox(panel, local.getTools(6), local.getDefaults(5));
-		    //component 15 pickaxe
-			MakeTextBox(panel, local.getTools(7), local.getDefaults(6));
-		    //component 17 hoe
-			MakeTextBox(panel, local.getTools(8), local.getDefaults(7));
+			MakeTextBox(panel, local.getTools(4), local.getDefaults(3), swordField);
+			MakeTextBox(panel, local.getTools(5), local.getDefaults(4), axeField);
+			MakeTextBox(panel, local.getTools(6), local.getDefaults(5), shovelField);
+			MakeTextBox(panel, local.getTools(7), local.getDefaults(6), pickaxeField);
+			MakeTextBox(panel, local.getTools(8), local.getDefaults(7), hoeField);
 		    
-			//submit
-		    JButton jbutton = new JButton(local.getUIopt(5));
-	    	fontChange(jbutton);
-	    	jbutton.setFocusable(false);
-		    
-		    jbutton.addActionListener( makeSubmitListener(panel, flag) );
-		    
-		    panel.add(jbutton);
-		    
-		    //scroll.add(p);
-		    
-		    //panel.add(scroll);
+			submitButton(panel);
 		}
 		//armor sets
-		else if(flag == 2)
+		else if(flag == JsonFlag.Armor)
 		{
 			//JScrollPane scroll = new JScrollPane();
 			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 47, 0, 0));
 		    panel.add(sizer);
 		    
-		    //component 2
-		    MakeTextBox(panel, local.getArmors(2), name);
-		    //component 4
-		    MakeTextBox(panel, local.getArmors(1), pref);
-		    //component 6
-		    MakeTextBox(panel, local.getArmors(0), mod_id);
+		    MakeTextBox(panel, local.getArmors(2), name, nameField);
+		    MakeTextBox(panel, local.getArmors(1), pref, textureField);
+		    MakeTextBox(panel, local.getArmors(0), mod_id, modidField);
 		    //postfixes
 		    JLabel ider = new JLabel(local.getTools(3));
 			//ider.setBorder(BorderFactory.createEmptyBorder(0, res.getBorder() + 2, 0, 0));
 			panel.add(ider);
-		    //component 9 helmet
-			MakeTextBox(panel, local.getArmors(3), local.getDefaults(8));
-		    //component 11 chestplate
-			MakeTextBox(panel, local.getArmors(4), local.getDefaults(9));
-		    //component 13 leggings
-			MakeTextBox(panel, local.getArmors(5), local.getDefaults(10));
-		    //component 15 boots
-			MakeTextBox(panel, local.getArmors(6), local.getDefaults(11));
+			MakeTextBox(panel, local.getArmors(3), local.getDefaults(8), helmetField);
+			MakeTextBox(panel, local.getArmors(4), local.getDefaults(9), chestplateField);
+			MakeTextBox(panel, local.getArmors(5), local.getDefaults(10), leggingsField);
+			MakeTextBox(panel, local.getArmors(6), local.getDefaults(11), bootsField);
 		    
-			//submit
-		    JButton jbutton = new JButton(local.getUIopt(5));
-	    	fontChange(jbutton);
-	    	jbutton.setFocusable(false);
-		    
-		    jbutton.addActionListener( makeSubmitListener(panel, flag) );
-		    
-		    panel.add(jbutton);
+			submitButton(panel);
 		}
 		//blocks All
-		else if(flag == 3)
+		else if(flag == JsonFlag.Block)
 		{
 			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 40, 0, 0));
 		    panel.add(sizer);
 			
-		    //component 2
-		    MakeTextBox(panel, local.getBlks(2), name);
-		    //component 4
-		    MakeTextBox(panel, local.getBlks(1), pref);
-		    //component 6
-		    MakeTextBox(panel, local.getBlks(0), mod_id);
+		    MakeTextBox(panel, local.getBlks(2), name, nameField);
+		    MakeTextBox(panel, local.getBlks(1), pref, textureField);
+		    MakeTextBox(panel, local.getBlks(0), mod_id, modidField);
 		    
-		    //submit
-		    JButton jbutton = new JButton(local.getUIopt(5));
-	    	fontChange(jbutton);
-	    	jbutton.setFocusable(false);
-		    
-		    jbutton.addActionListener( makeSubmitListener(panel, flag) );
-		    
-		    panel.add(jbutton);
+		    submitButton(panel);
 		}
 		
 		contentPane.add(panel, BorderLayout.WEST);
 		return panel;
 	}
 	
-	/**
-	 * 
-	 * @param panel
-	 * @param kind 0 : BASIC       |
-	 *             1 : TOOL        |
-	 *             2 : ARMOR       |
-	 *             3 : BLOCKS      |
-	 * @return
-	 */
-	private ActionListener makeSubmitListener(JPanel panel, int kind)
+	private ActionListener makeSubmitListener(JPanel panel, JsonFlag kind)
 	{
-		if(kind == 0)
+		if(kind == JsonFlag.BasicItem)
 		{
 			return makeBasicSubmit(panel);
 		}
-		else if(kind == 1)
+		else if(kind == JsonFlag.Tool)
 		{
 			return makeToolSubmit(panel);
 		}
-		else if(kind == 2)
+		else if(kind == JsonFlag.Armor)
 		{
 			return makeArmorSubmit(panel);
 		}
-		else if(kind == 3)
+		else if(kind == JsonFlag.Block)
 		{
 			return makeBlockSubmit(panel);
 		}
 		return makeBasicSubmit(panel);
 		
+	}
+	
+	private void tabMaker(String text, JsonPreview prev, boolean inner, int j)
+	{
+		String fileName = prev.getName() + (inner ? prev.getOptions().get(j) : "");
+		
+		//create place to put read only text
+		JTextPane label = new JTextPane();
+		label.setEditable(false);
+		
+		fontChange(label);
+		
+		//set the read only text
+		label.setText(text);
+		
+		//make it scrollable
+		JScrollPane scroll = new JScrollPane(label);
+		tabs.addTab(fileName, scroll);
+		
+		//X button
+		int index = tabs.getTabCount() - 1;
+		JPanel tabPanel = new JPanel(new GridBagLayout());
+		tabPanel.setOpaque(false);
+		JLabel titleLabel = new JLabel(fileName);
+		fontChange(titleLabel);
+		JButton buttonClose = new JButton("x");
+		fontChange(buttonClose);
+		buttonClose.addMouseListener(new MouseAdapter()
+		{
+			public void mouseEntered(MouseEvent e)
+			{
+				buttonClose.setForeground(Color.RED);
+			}
+			
+			public void mouseExited(MouseEvent e)
+			{
+				buttonClose.setForeground(Color.BLACK);
+			}
+		});
+		buttonClose.setBorder(null);
+		buttonClose.setOpaque(false);
+		buttonClose.setContentAreaFilled(false);
+		buttonClose.setBorderPainted(false);
+		
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.weightx = 1;
+		
+		tabPanel.add(titleLabel, gbc);
+		
+		gbc.gridx++;
+		gbc.weightx = 0;
+		tabPanel.add(new JLabel(" "), gbc);
+		
+		gbc.gridx++;
+		
+		tabPanel.add(buttonClose, gbc);
+		tabs.setTabComponentAt(index, tabPanel);
+		jsons.put(tabPanel, prev);
+		buttonClose.addActionListener(makeCloseTabListener(tabPanel, scroll, inner, inner ? prev.getOptions().get(j) : ""));
 	}
 	
 	/**
@@ -555,62 +512,18 @@ public class Window
 	{
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String itemName = ((JTextField)panel.getComponent(2)).getText();
-				String texture = ((JTextField)panel.getComponent(4)).getText();
-				String modid = ((JTextField)panel.getComponent(6)).getText();
+				String itemName = ((JTextField)panel.getComponent(nameField.value)).getText();
+				String texture = ((JTextField)panel.getComponent(textureField.value)).getText();
+				String modid = ((JTextField)panel.getComponent(modidField.value)).getText();
 				mod_id = modid;
 				pref = texture;
 				name = itemName;
 				
-				JsonPreview prev = new JsonPreview(local, JsonType.BASIC, itemName, texture, modid, 3);
+				JsonPreview prev = new JsonPreview(JsonType.BASIC, itemName, texture, modid);
 				//jsons.add(prev);
 				
 				String text = prev.getFiles()[0];
-				
-				//create place to put read only text
-				JTextPane label = new JTextPane();
-				label.setEditable(false);
-				
-				fontChange(label);
-				
-				//set the read only text
-				label.setText(text);
-				
-				//make it scrollable
-				JScrollPane scroll = new JScrollPane(label);
-				tabs.addTab(prev.getName(), scroll);//scroll);
-				
-				//X button
-				int index = tabs.getTabCount() - 1;
-				JPanel tabPanel = new JPanel(new GridBagLayout());
-				tabPanel.setOpaque(false);
-				JLabel titleLabel = new JLabel(prev.getName());
-				fontChange(titleLabel);
-				JButton buttonClose = new JButton("x");
-				fontChange(buttonClose);
-				//buttonClose.setFocusable(false);
-				buttonClose.setBorder(null);
-				buttonClose.setOpaque(false);
-				buttonClose.setContentAreaFilled(false);
-				buttonClose.setBorderPainted(false);
-				
-				GridBagConstraints gbc = new GridBagConstraints();
-				gbc.gridx = 0;
-				gbc.gridy = 0;
-				gbc.weightx = 1;
-				
-				tabPanel.add(titleLabel, gbc);
-				
-				gbc.gridx++;
-				gbc.weightx = 0;
-				tabPanel.add(new JLabel(" "), gbc);
-				
-				gbc.gridx++;
-				
-				tabPanel.add(buttonClose, gbc);
-				tabs.setTabComponentAt(index, tabPanel);
-				jsons.put(tabPanel, prev);
-				buttonClose.addActionListener(makeCloseTabListener(tabPanel, scroll, false, ""));
+				tabMaker(text, prev, false, 0);
 			}
 		};
 	}
@@ -624,70 +537,29 @@ public class Window
 	{
 		return new ActionListener() {
     		public void actionPerformed(ActionEvent e) {
-    			String setName = ((JTextField)panel.getComponent(2)).getText();
-    			String prefix = ((JTextField)panel.getComponent(4)).getText();
-    			String modid = ((JTextField)panel.getComponent(6)).getText();
+    			String setName = ((JTextField)panel.getComponent(nameField.value)).getText();
+    			String prefix = ((JTextField)panel.getComponent(textureField.value)).getText();
+    			String modid = ((JTextField)panel.getComponent(modidField.value)).getText();
     			mod_id = modid;
     			pref = prefix;
     			name = setName;
     			
     			ArrayList<String> post = new ArrayList<String>();
-    			post.add(((JTextField)panel.getComponent(9)).getText());
-    			post.add(((JTextField)panel.getComponent(11)).getText());
-    			post.add(((JTextField)panel.getComponent(13)).getText());
-    			post.add(((JTextField)panel.getComponent(15)).getText());
-    			post.add(((JTextField)panel.getComponent(17)).getText());
+    			post.add(((JTextField)panel.getComponent(swordField.value)).getText());
+    			post.add(((JTextField)panel.getComponent(axeField.value)).getText());
+    			post.add(((JTextField)panel.getComponent(shovelField.value)).getText());
+    			post.add(((JTextField)panel.getComponent(pickaxeField.value)).getText());
+    			post.add(((JTextField)panel.getComponent(hoeField.value)).getText());
     			
-    			JsonPreview prev = new JsonPreview(local, JsonType.TOOL_SET, setName, prefix, modid, 3).add(post);
+    			JsonPreview prev = new JsonPreview(JsonType.TOOL_SET, setName, prefix, modid).add(post);
+    			String[] files = prev.getFiles();
     			//jsons.add(prev);
 
     			for(int j = 0; j < prev.getOptions().size(); j++)
 				{
-					String text = prev.getFiles()[j];
+					String text = files[j];
 					
-					//create place to put read only text
-					JTextPane label = new JTextPane();
-					label.setEditable(false);
-					
-					fontChange(label);
-					
-					//set the read only text
-					label.setText(text);
-					
-					//make it scrollable
-					JScrollPane scroll = new JScrollPane(label);
-					tabs.addTab(prev.getName() + prev.getOptions().get(j), scroll);//scroll);
-				
-					//X button
-					int index = tabs.getTabCount() - 1;
-					JPanel tabPanel = new JPanel(new GridBagLayout());
-					tabPanel.setOpaque(false);
-					JLabel titleLabel = new JLabel(prev.getName() + prev.getOptions().get(j));
-					fontChange(titleLabel);
-					JButton buttonClose = new JButton("x");
-					fontChange(buttonClose);
-					buttonClose.setFocusable(false);
-					buttonClose.setOpaque(false);
-					buttonClose.setContentAreaFilled(false);
-					buttonClose.setBorderPainted(false);
-					
-					GridBagConstraints gbc = new GridBagConstraints();
-					gbc.gridx = 0;
-					gbc.gridy = 0;
-					gbc.weightx = 1;
-					
-					tabPanel.add(titleLabel, gbc);
-					
-					gbc.gridx++;
-					gbc.weightx = 0;
-					tabPanel.add(new JLabel(" "), gbc);
-					
-					gbc.gridx++;
-					
-					tabPanel.add(buttonClose, gbc);
-					tabs.setTabComponentAt(index, tabPanel);
-					jsons.put(tabPanel, prev);
-					buttonClose.addActionListener(makeCloseTabListener(tabPanel, scroll, true, prev.getOptions().get(j)));
+					tabMaker(text, prev, true, j);
 				}
     		}
     	};
@@ -702,69 +574,28 @@ public class Window
 	{
 		return new ActionListener() {
     		public void actionPerformed(ActionEvent e) {
-    			String setName = ((JTextField)panel.getComponent(2)).getText();
-    			String prefix = ((JTextField)panel.getComponent(4)).getText();
-    			String modid = ((JTextField)panel.getComponent(6)).getText();
+    			String setName = ((JTextField)panel.getComponent(nameField.value)).getText();
+    			String prefix = ((JTextField)panel.getComponent(textureField.value)).getText();
+    			String modid = ((JTextField)panel.getComponent(modidField.value)).getText();
     			mod_id = modid;
     			pref = prefix;
     			name = setName;
     			
     			ArrayList<String> post = new ArrayList<String>();
-    			post.add(((JTextField)panel.getComponent(9)).getText());
-    			post.add(((JTextField)panel.getComponent(11)).getText());
-    			post.add(((JTextField)panel.getComponent(13)).getText());
-    			post.add(((JTextField)panel.getComponent(15)).getText());
+    			post.add(((JTextField)panel.getComponent(helmetField.value)).getText());
+    			post.add(((JTextField)panel.getComponent(chestplateField.value)).getText());
+    			post.add(((JTextField)panel.getComponent(leggingsField.value)).getText());
+    			post.add(((JTextField)panel.getComponent(bootsField.value)).getText());
     			
-    			JsonPreview prev = new JsonPreview(local, JsonType.ARMOR_SET, setName, prefix, modid, 3).add(post);
+    			JsonPreview prev = new JsonPreview(JsonType.ARMOR_SET, setName, prefix, modid).add(post);
     			//jsons.add(prev);
+    			String[] files = prev.getFiles();
 
     			for(int j = 0; j < prev.getOptions().size(); j++)
 				{
-					String text = prev.getFiles()[j];
+					String text = files[j];
 					
-					//create place to put read only text
-					JTextPane label = new JTextPane();
-					label.setEditable(false);
-					
-					fontChange(label);
-					
-					//set the read only text
-					label.setText(text);
-					
-					//make it scrollable
-					JScrollPane scroll = new JScrollPane(label);
-					tabs.addTab(prev.getName() + prev.getOptions().get(j), scroll);//scroll);
-				
-					//X button
-					int index = tabs.getTabCount() - 1;
-					JPanel tabPanel = new JPanel(new GridBagLayout());
-					tabPanel.setOpaque(false);
-					JLabel titleLabel = new JLabel(prev.getName() + prev.getOptions().get(j));
-					fontChange(titleLabel);
-					JButton buttonClose = new JButton("x");
-					fontChange(buttonClose);
-					buttonClose.setFocusable(false);
-					buttonClose.setOpaque(false);
-					buttonClose.setContentAreaFilled(false);
-					buttonClose.setBorderPainted(false);
-					
-					GridBagConstraints gbc = new GridBagConstraints();
-					gbc.gridx = 0;
-					gbc.gridy = 0;
-					gbc.weightx = 1;
-					
-					tabPanel.add(titleLabel, gbc);
-					
-					gbc.gridx++;
-					gbc.weightx = 0;
-					tabPanel.add(new JLabel(" "), gbc);
-					
-					gbc.gridx++;
-					
-					tabPanel.add(buttonClose, gbc);
-					tabs.setTabComponentAt(index, tabPanel);
-					jsons.put(tabPanel, prev);
-					buttonClose.addActionListener(makeCloseTabListener(tabPanel, scroll, true, prev.getOptions().get(j)));
+					tabMaker(text, prev, true, j);
 				}
     		}
     	};
@@ -779,69 +610,24 @@ public class Window
 	{
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String itemName = ((JTextField)panel.getComponent(2)).getText();
-				String texture = ((JTextField)panel.getComponent(4)).getText();
-				String modid = ((JTextField)panel.getComponent(6)).getText();
+				String itemName = ((JTextField)panel.getComponent(nameField.value)).getText();
+				String texture = ((JTextField)panel.getComponent(textureField.value)).getText();
+				String modid = ((JTextField)panel.getComponent(modidField.value)).getText();
 				mod_id = modid;
 				pref = texture;
 				name = itemName;
 				
 				JsonPreview prev[] = { 
-						new JsonPreview(local, JsonType.BLOCK_ITEM, itemName, texture, modid, 3),
-						new JsonPreview(local, JsonType.BLOCK_STATE, itemName, texture, modid, 3),
-						new JsonPreview(local, JsonType.BLOCK, itemName, texture, modid, 3)
+						new JsonPreview(JsonType.BLOCK_ITEM, itemName, texture, modid),
+						new JsonPreview(JsonType.BLOCK_STATE, itemName, texture, modid),
+						new JsonPreview(JsonType.BLOCK, itemName, texture, modid)
 				};
-				//jsons.add(prev[0]);
-				//jsons.add(prev[1]);
-				//jsons.add(prev[2]);
 				
 				for(int i = 0; i < 3; i++)
 				{
 					String text = prev[i].getFiles()[0];
 					
-					//create place to put read only text
-					JTextPane label = new JTextPane();
-					label.setEditable(false);
-					
-					fontChange(label);
-					
-					//set the read only text
-					label.setText(text);
-					
-					//make it scrollable
-					JScrollPane scroll = new JScrollPane(label);
-					tabs.addTab(prev[i].getName(), scroll);//scroll);
-				
-					//X button
-					int index = tabs.getTabCount() - 1;
-					JPanel tabPanel = new JPanel(new GridBagLayout());
-					tabPanel.setOpaque(false);
-					JLabel titleLabel = new JLabel(prev[i].getName());
-					fontChange(titleLabel);
-					JButton buttonClose = new JButton("x");
-					fontChange(buttonClose);
-					buttonClose.setFocusable(false);
-					buttonClose.setOpaque(false);
-					buttonClose.setContentAreaFilled(false);
-					buttonClose.setBorderPainted(false);
-					
-					GridBagConstraints gbc = new GridBagConstraints();
-					gbc.gridx = 0;
-					gbc.gridy = 0;
-					gbc.weightx = 1;
-					
-					tabPanel.add(titleLabel, gbc);
-					
-					gbc.gridx++;
-					gbc.weightx = 0;
-					tabPanel.add(new JLabel(" "), gbc);
-					
-					gbc.gridx++;
-					
-					tabPanel.add(buttonClose, gbc);
-					tabs.setTabComponentAt(index, tabPanel);
-					jsons.put(tabPanel, prev[i]);
-					buttonClose.addActionListener(makeCloseTabListener(tabPanel, scroll, false, ""));
+					tabMaker(text, prev[i], false, 0);
 				}
 				
 			}
@@ -1058,30 +844,8 @@ public class Window
 					for(int j = 0; j < en.getValue().getOptions().size(); j++)
 					{
 						String tmp;
-						if(en.getValue().getType() == JsonType.BASIC)
-						{
-							tmp = directoryExists(path, Reference.ITEM_FOLD);
-						}
-						else if(en.getValue().getType() == JsonType.TOOL_SET)
-						{
-							tmp = directoryExists(path, Reference.ITEM_FOLD);
-						}
-						else if(en.getValue().getType() == JsonType.ARMOR_SET)
-						{
-							tmp = directoryExists(path, Reference.ITEM_FOLD);
-						}
-						else if(en.getValue().getType() == JsonType.BLOCK_ITEM)
-						{
-							tmp = directoryExists(path, Reference.ITEM_FOLD);
-						}
-						else if(en.getValue().getType() == JsonType.BLOCK_STATE)
-						{
-							tmp = directoryExists(path, Reference.B_STATE_FOLD);
-						}
-						else//BLOCK
-						{
-							tmp = directoryExists(path, Reference.BLCK_FOLD);
-						}
+						tmp = directoryExists(path, en.getValue().getType().folder);
+						
 						
 						File file = new File(tmp);
 						try {

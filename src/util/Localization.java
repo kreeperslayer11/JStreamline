@@ -237,6 +237,11 @@ public class Localization
 		return this.res[index];
 	}
 	
+	public int getResLength()
+	{
+		return res.length;
+	}
+	
 	public String getMenus(int index)
 	{
 		return this.menus[index];
