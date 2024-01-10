@@ -1,5 +1,5 @@
 /bin/
-/resources/data
+/resources/data.json
 /libs
 # eclipse
 bin
