@@ -1,1 +1,10 @@
 /bin/
+/resources/data
+/libs
+# eclipse
+bin
+*.launch
+.settings
+.metadata
+.classpath
+.project
