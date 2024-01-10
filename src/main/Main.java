@@ -1,11 +1,8 @@
 package main;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Scanner;
-
 import javax.swing.*;
 
+import templates.json.savedata.Save;
 import util.Localization;
 import util.Parser;
 import util.Reference;
@@ -21,41 +18,14 @@ public class Main
 	
 	public void start()
 	{
-		String path = ".";
-		String reso = null;
-		try 
-		{
-			//read = new FileReader(this.getClass().getClassLoader().getResource(Reference.DATA_FILE).getPath().replace("%20", " "));//new FileReader(Reference.DATA_FILE);
-			//read = new FileReader(Reference.DATA_FILE);
-			File file = new File(Reference.DATA_FILE);
-			Scanner scan = new Scanner(file);
-			
-			if(scan.hasNext())
-			{
-				path = scan.nextLine();
-				
-			}
-			if(scan.hasNext())
-			{
-				reso = scan.next();
-			}
-			
-			scan.close();
-			
-		} 
-		catch (FileNotFoundException e) 
-		{
-			//path = this.getClass().getClassLoader().getResource(Reference.DATA_FILE).getPath().replace("%20", " ");
-			//path = new File(Reference.DATA_FILE).getAbsolutePath();
-			e.printStackTrace();
-		}
+		String path = Save.save.ExportPath();
+		String reso = Save.save.Resolution();
 		
 		if(path.length() == 0)
 		{
 			path = ".";
 		}
 		
-		//ImageIcon img = new ImageIcon(this.getClass().getClassLoader().getResource(Reference.ICON_FILE).getFile().replace("%20", " "));
 		ImageIcon img = new ImageIcon(Reference.ICON_FILE);
 		
 		Localization local = new Localization();

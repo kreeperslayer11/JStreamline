@@ -7,7 +7,7 @@ public abstract class JsonSerializable
 {
 	public String serialize()
 	{
-		Gson gson= new GsonBuilder().setPrettyPrinting().create();
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		return gson.toJson(this);
 	}
 }

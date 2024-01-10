@@ -2,24 +2,21 @@ package main;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Scanner;
 
 import javax.swing.*;
 
+import templates.json.savedata.Save;
+import util.FileHandler;
 import util.JsonFlag;
 import util.JsonType;
 import util.Localization;
 import util.RefInt;
-import util.Reference;
 import util.Resolution;
 
 public class Window 
@@ -40,6 +37,7 @@ public class Window
 			swordField = new RefInt(), axeField = new RefInt(), shovelField = new RefInt(), 
 			pickaxeField = new RefInt(), hoeField = new RefInt(), helmetField = new RefInt(), 
 			chestplateField = new RefInt(), leggingsField = new RefInt(), bootsField = new RefInt();
+	private ArrayList<Integer> componentList = new ArrayList<>();
 	
 	public Window(JFrame frame, JPanel contentPane, Resolution res, Localization local, String path, String reso)
 	{
@@ -55,7 +53,7 @@ public class Window
 		this.name = local.getDefaults(2);
 		
 		contentPane.setLayout(new BorderLayout(res.getBorder(), res.getBorder()));
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		
 		if(reso == null)
 		{
@@ -65,7 +63,7 @@ public class Window
 		{
 			String[] s = reso.split("x");
 			res.resolutionChange(res.getIndexFromSaveData(s));
-			frame.setSize(Integer.parseInt(s[0]), Integer.parseInt(s[1]));
+			frame.setSize(res.getWidth(), res.getHeight());
 		}
 		
 		frame.setVisible(true);
@@ -151,45 +149,7 @@ public class Window
     			res.resolutionChange(num);
     			killContent();
     			frame.setSize(res.getWidth(), res.getHeight());
-    			File file = new File(Reference.DATA_FILE);
-    			Scanner scan;
-				try {
-					scan = new Scanner(file);
-					String line = ".";
-					String contents = "";
-					if(scan.hasNext())
-					{
-						line = scan.next();
-					}
-					if(scan.hasNext())
-					{
-						scan.next();
-					}
-					while(scan.hasNext())
-					{
-						contents = "\n" + scan.next();
-					}
-					scan.close();
-					
-					FileWriter fw = new FileWriter(file.getAbsoluteFile());
-					BufferedWriter bw = new BufferedWriter(fw);
-					bw.write(line);
-					bw.write("\n" + res.getWidth() + "x" + res.getHeight());
-					bw.write(contents);
-					bw.close();
-					
-				} 
-				catch (FileNotFoundException e1) 
-				{
-					e1.printStackTrace();
-				} 
-				catch (IOException e1) 
-				{
-					e1.printStackTrace();
-				}
-    			
-    			//makeMenus();
-    			//makeContent();
+    			Save.save.updateRes(res.getWidth() + "x" + res.getHeight());
     			refreshContent("");
     		}
     	};
@@ -327,7 +287,7 @@ public class Window
     	fontChange(jbutton);
     	jbutton.setFocusable(false);
 	    
-	    jbutton.addActionListener( makeSubmitListener(panel, flag) );
+	    jbutton.addActionListener( makeFilesAfterSubmit(panel, flag) );
 	    
 	    panel.add(jbutton);
 	}
@@ -341,6 +301,7 @@ public class Window
 		
 		JLabel sizer = new JLabel("");
 		
+		componentList.clear();
 		
 		//NO SELECTION
 		if(flag == JsonFlag.Empty)
@@ -379,6 +340,7 @@ public class Window
 			MakeTextBox(panel, local.getTools(6), local.getDefaults(5), shovelField);
 			MakeTextBox(panel, local.getTools(7), local.getDefaults(6), pickaxeField);
 			MakeTextBox(panel, local.getTools(8), local.getDefaults(7), hoeField);
+			componentList.addAll(Arrays.asList(new Integer[] { swordField.value, axeField.value, shovelField.value, pickaxeField.value, hoeField.value }));
 		    
 			submitButton(panel);
 		}
@@ -400,6 +362,7 @@ public class Window
 			MakeTextBox(panel, local.getArmors(4), local.getDefaults(9), chestplateField);
 			MakeTextBox(panel, local.getArmors(5), local.getDefaults(10), leggingsField);
 			MakeTextBox(panel, local.getArmors(6), local.getDefaults(11), bootsField);
+			componentList.addAll(Arrays.asList(new Integer[] { helmetField.value, chestplateField.value, leggingsField.value, bootsField.value }));
 		    
 			submitButton(panel);
 		}
@@ -418,28 +381,6 @@ public class Window
 		
 		contentPane.add(panel, BorderLayout.WEST);
 		return panel;
-	}
-	
-	private ActionListener makeSubmitListener(JPanel panel, JsonFlag kind)
-	{
-		if(kind == JsonFlag.BasicItem)
-		{
-			return makeBasicSubmit(panel);
-		}
-		else if(kind == JsonFlag.Tool)
-		{
-			return makeToolSubmit(panel);
-		}
-		else if(kind == JsonFlag.Armor)
-		{
-			return makeArmorSubmit(panel);
-		}
-		else if(kind == JsonFlag.Block)
-		{
-			return makeBlockSubmit(panel);
-		}
-		return makeBasicSubmit(panel);
-		
 	}
 	
 	private void tabMaker(String text, JsonPreview prev, boolean inner, int j)
@@ -503,133 +444,44 @@ public class Window
 		buttonClose.addActionListener(makeCloseTabListener(tabPanel, scroll, inner, inner ? prev.getOptions().get(j) : ""));
 	}
 	
-	/**
-	 * create json on button press for items
-	 * @param panel
-	 * @return
-	 */
-	private ActionListener makeBasicSubmit(JPanel panel)
+	private void getUbiquitousText(JPanel panel)
+	{
+		name = ((JTextField)panel.getComponent(nameField.value)).getText();
+		pref = ((JTextField)panel.getComponent(textureField.value)).getText();
+		mod_id = ((JTextField)panel.getComponent(modidField.value)).getText();
+	}
+	
+	private ActionListener makeFilesAfterSubmit(JPanel panel, JsonFlag kind)
 	{
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String itemName = ((JTextField)panel.getComponent(nameField.value)).getText();
-				String texture = ((JTextField)panel.getComponent(textureField.value)).getText();
-				String modid = ((JTextField)panel.getComponent(modidField.value)).getText();
-				mod_id = modid;
-				pref = texture;
-				name = itemName;
-				
-				JsonPreview prev = new JsonPreview(JsonType.BASIC, itemName, texture, modid);
-				//jsons.add(prev);
-				
-				String text = prev.getFiles()[0];
-				tabMaker(text, prev, false, 0);
-			}
-		};
-	}
-	
-	/**
-	 * create jsons on button press for tool sets
-	 * @param panel
-	 * @return
-	 */
-	private ActionListener makeToolSubmit(JPanel panel)
-	{
-		return new ActionListener() {
-    		public void actionPerformed(ActionEvent e) {
-    			String setName = ((JTextField)panel.getComponent(nameField.value)).getText();
-    			String prefix = ((JTextField)panel.getComponent(textureField.value)).getText();
-    			String modid = ((JTextField)panel.getComponent(modidField.value)).getText();
-    			mod_id = modid;
-    			pref = prefix;
-    			name = setName;
-    			
-    			ArrayList<String> post = new ArrayList<String>();
-    			post.add(((JTextField)panel.getComponent(swordField.value)).getText());
-    			post.add(((JTextField)panel.getComponent(axeField.value)).getText());
-    			post.add(((JTextField)panel.getComponent(shovelField.value)).getText());
-    			post.add(((JTextField)panel.getComponent(pickaxeField.value)).getText());
-    			post.add(((JTextField)panel.getComponent(hoeField.value)).getText());
-    			
-    			JsonPreview prev = new JsonPreview(JsonType.TOOL_SET, setName, prefix, modid).add(post);
-    			String[] files = prev.getFiles();
-    			//jsons.add(prev);
-
-    			for(int j = 0; j < prev.getOptions().size(); j++)
+				getUbiquitousText(panel);
+				ArrayList<String> components = new ArrayList<>();
+				for (int i = 0; i < componentList.size(); i++)
 				{
-					String text = files[j];
-					
-					tabMaker(text, prev, true, j);
+					components.add(((JTextField)panel.getComponent(componentList.get(i))).getText());
 				}
-    		}
-    	};
-	}
-	
-	/**
-	 * create jsons on button press for armor sets
-	 * @param panel
-	 * @return
-	 */
-	private ActionListener makeArmorSubmit(JPanel panel)
-	{
-		return new ActionListener() {
-    		public void actionPerformed(ActionEvent e) {
-    			String setName = ((JTextField)panel.getComponent(nameField.value)).getText();
-    			String prefix = ((JTextField)panel.getComponent(textureField.value)).getText();
-    			String modid = ((JTextField)panel.getComponent(modidField.value)).getText();
-    			mod_id = modid;
-    			pref = prefix;
-    			name = setName;
-    			
-    			ArrayList<String> post = new ArrayList<String>();
-    			post.add(((JTextField)panel.getComponent(helmetField.value)).getText());
-    			post.add(((JTextField)panel.getComponent(chestplateField.value)).getText());
-    			post.add(((JTextField)panel.getComponent(leggingsField.value)).getText());
-    			post.add(((JTextField)panel.getComponent(bootsField.value)).getText());
-    			
-    			JsonPreview prev = new JsonPreview(JsonType.ARMOR_SET, setName, prefix, modid).add(post);
-    			//jsons.add(prev);
-    			String[] files = prev.getFiles();
-
-    			for(int j = 0; j < prev.getOptions().size(); j++)
+				if (components.size() == 0)
 				{
-					String text = files[j];
-					
-					tabMaker(text, prev, true, j);
-				}
-    		}
-    	};
-	}
-	
-	/**
-	 * create jsons on button press for blocks
-	 * @param panel
-	 * @return
-	 */
-	private ActionListener makeBlockSubmit(JPanel panel)
-	{
-		return new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String itemName = ((JTextField)panel.getComponent(nameField.value)).getText();
-				String texture = ((JTextField)panel.getComponent(textureField.value)).getText();
-				String modid = ((JTextField)panel.getComponent(modidField.value)).getText();
-				mod_id = modid;
-				pref = texture;
-				name = itemName;
-				
-				JsonPreview prev[] = { 
-						new JsonPreview(JsonType.BLOCK_ITEM, itemName, texture, modid),
-						new JsonPreview(JsonType.BLOCK_STATE, itemName, texture, modid),
-						new JsonPreview(JsonType.BLOCK, itemName, texture, modid)
-				};
-				
-				for(int i = 0; i < 3; i++)
-				{
-					String text = prev[i].getFiles()[0];
-					
-					tabMaker(text, prev[i], false, 0);
+					components.add("");
 				}
 				
+				ArrayList<JsonType> fileTypes = kind.getType();
+				JsonPreview[] prevs = new JsonPreview[fileTypes.size()];
+				for (int i = 0; i < fileTypes.size(); i++)
+				{
+					prevs[i] = new JsonPreview(fileTypes.get(i), name, pref, mod_id).add(components);
+				}
+				
+				for (int i = 0; i < prevs.length; i++)
+				{
+					String[] files = prevs[i].getFiles();
+					for(int j = 0; j < prevs[i].getOptions().size(); j++)
+					{
+						String text = files[j];
+						tabMaker(text, prevs[i], true, j);
+					}
+				}
 			}
 		};
 	}
@@ -716,12 +568,46 @@ public class Window
 	    return panel;
 	}
 	
+	private int saveJson(String directory, Entry<Component, JsonPreview> json, int j)
+	{
+		String fileName = json.getValue().getName() + json.getValue().getOptions().get(j) + ".json";
+		File file = new File(directory + "\\" + fileName);
+		FileHandler.createFile(file);
+		if (FileHandler.writeFileExists(file, json.getValue().getFiles()[j]))
+		{
+			return 0;
+		}
+		else
+		{
+			return 1;
+		}
+	}
+	
+	//TODO: save failed saves into a passed in hash map. then when the has map is reset later, set it to that instead so unsaved jsons aren't deleted
+	private int[] saveJsons()
+	{
+		int[] flags = new int[2];
+		flags[0] = 0;
+		flags[1] = 0;
+		for(Entry<Component, JsonPreview> en : jsons.entrySet())
+		{
+			for(int j = 0; j < en.getValue().getOptions().size(); j++)
+			{
+				String tmp;
+				tmp = directoryExists(path, en.getValue().getType().folder);
+				flags[saveJson(tmp, en, j)]++;
+			}
+		}
+		return flags;
+	}
+	
 	private ActionListener makeSaveAsListener(JPanel panel)
 	{
 		return new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				String messageFollows = "";
 				if(jsons.size() == 0)
 				{
 					return;
@@ -746,82 +632,22 @@ public class Window
 				if(localPath != null)
 				{
 					path = localPath;
-					//for (int i = 0; i < jsons.size(); i++)
-					for(Entry<Component, JsonPreview> en : jsons.entrySet())
-					{
-						for(int j = 0; j < en.getValue().getOptions().size(); j++)
-						{
-							String tmp;
-							if(en.getValue().getType() == JsonType.BASIC)
-							{
-								tmp = directoryExists(localPath, Reference.ITEM_FOLD);
-							}
-							else if(en.getValue().getType() == JsonType.TOOL_SET)
-							{
-								tmp = directoryExists(localPath, Reference.ITEM_FOLD);
-							}
-							else if(en.getValue().getType() == JsonType.ARMOR_SET)
-							{
-								tmp = directoryExists(localPath, Reference.ITEM_FOLD);
-							}
-							else if(en.getValue().getType() == JsonType.BLOCK_ITEM)
-							{
-								tmp = directoryExists(localPath, Reference.ITEM_FOLD);
-							}
-							else if(en.getValue().getType() == JsonType.BLOCK_STATE)
-							{
-								tmp = directoryExists(localPath, Reference.B_STATE_FOLD);
-							}
-							else//BLOCK
-							{
-								tmp = directoryExists(localPath, Reference.BLCK_FOLD);
-							}
-							
-							File file = new File(tmp);
-							try {
-								FileWriter fw = new FileWriter(file.getAbsoluteFile() + "\\" + en.getValue().getName() + en.getValue().getOptions().get(j) + ".json");
-								BufferedWriter bw = new BufferedWriter(fw);
-								bw.write(en.getValue().getFiles()[j]);
-								bw.close();
-							}
-							catch(IOException err)
-							{
-								err.printStackTrace();
-								System.exit(-1);
-							}
-						}
-					}
+					int[] tmp = saveJsons();
+					messageFollows = (tmp[0] > 0 ? (tmp[0] + " " + local.getMsgs(1)) : "")
+							+ (tmp[0] > 0 && tmp[1] > 0 ? " " : "")
+							+ (tmp[1] > 0 ? (tmp[1] + " " + local.getMsgs(0)) : "");
 					//File file = new File(this.getClass().getClassLoader().getResource(Reference.DATA_FILE).getFile().replace("%20", " "));
-					File file = new File(Reference.DATA_FILE);
-					try {
-						Scanner scan = new Scanner(file);
-						scan.next();
-						String contents = "";
-						while(scan.hasNext())
-						{
-							contents = "\n" + contents + scan.next();
-						}
-						scan.close();
-						FileWriter fw = new FileWriter(file.getAbsoluteFile());
-						BufferedWriter bw = new BufferedWriter(fw);
-						bw.write(path);
-						bw.write(contents);
-						bw.close();
-					}
-					catch(IOException err)
+					if (!Save.save.updatePath(path))
 					{
-						err.printStackTrace();
-						//failed
-						refreshContent(local.getMsgs(0));
+						refreshContent(messageFollows);
 						return;
-						//System.exit(-1);
 					}
 				}
 				tabs = new JTabbedPane(JTabbedPane.TOP);
 				jsons = new HashMap<>();
 				currentIndex = -1;
 				//saved
-				refreshContent(local.getMsgs(1));
+				refreshContent(messageFollows);
 			}
 			
 		};
@@ -838,37 +664,16 @@ public class Window
 				{
 					return;
 				}
-				//for (int i = 0; i < jsons.size(); i++)
-				for(Entry<Component, JsonPreview> en : jsons.entrySet())
-				{
-					for(int j = 0; j < en.getValue().getOptions().size(); j++)
-					{
-						String tmp;
-						tmp = directoryExists(path, en.getValue().getType().folder);
-						
-						
-						File file = new File(tmp);
-						try {
-							FileWriter fw = new FileWriter(file.getAbsoluteFile() + "\\" + en.getValue().getName() + en.getValue().getOptions().get(j) + ".json");
-							BufferedWriter bw = new BufferedWriter(fw);
-							bw.write(en.getValue().getFiles()[j]);
-							bw.close();
-						}
-						catch(IOException err)
-						{
-							err.printStackTrace();
-							//failed
-							refreshContent(local.getMsgs(0));
-							return;
-							//System.exit(-1);
-						}
-					}
-				}
+				
+				int[] tmp = saveJsons();
+				String messageFollows = (tmp[0] > 0 ? (tmp[0] + " " + local.getMsgs(1)) : "")
+						+ (tmp[0] > 0 && tmp[1] > 0 ? " " : "")
+						+ (tmp[1] > 0 ? (tmp[1] + " " + local.getMsgs(0)) : "");
 				tabs = new JTabbedPane(JTabbedPane.TOP);
 				jsons = new HashMap<>();
 				currentIndex = -1;
 				//saved
-				refreshContent(local.getMsgs(1));
+				refreshContent(messageFollows);
 			}
 			
 		};

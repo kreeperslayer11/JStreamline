@@ -21,22 +21,12 @@ public class JsonPreview
 	/**
 	 * 
 	 * @param type kind of json file this is
-	 */
-	JsonPreview(JsonType type)
-	{
-		this.options.add("");
-		this.type = type;
-	}
-	
-	/**
-	 * 
-	 * @param type kind of json file this is
 	 * @param name name of the file without .json
 	 * @param texture the name of the texture refered to in the file
 	 * @param modid mod id of the mod this is being generated for
 	 * @param spacesPerIndent
 	 */
-	JsonPreview(JsonType type, String name, String texture, String modid)
+	public JsonPreview(JsonType type, String name, String texture, String modid)
 	{
 		this.options.add("");
 		this.type = type;
