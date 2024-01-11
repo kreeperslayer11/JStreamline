@@ -2,7 +2,7 @@ package templates.json.models;
 
 import templates.inner.ITextures;
 import templates.json.JsonSerializable;
-import util.JsonType;
+import util.json.generator.JsonType;
 
 public abstract class Model extends JsonSerializable
 {

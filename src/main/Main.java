@@ -2,11 +2,11 @@ package main;
 
 import javax.swing.*;
 
-import templates.json.savedata.Save;
-import util.Localization;
-import util.Parser;
+import templates.json.savedata.lang.Lang;
+import templates.json.savedata.settings.Save;
 import util.Reference;
 import util.Resolution;
+import util.reference.LangTitlesRef;
 
 public class Main 
 {
@@ -28,17 +28,14 @@ public class Main
 		
 		ImageIcon img = new ImageIcon(Reference.ICON_FILE);
 		
-		Localization local = new Localization();
-		Parser parser = new Parser(local);
 		Resolution res = new Resolution();
-		parser.Localize();
 		
-		JFrame frame = new JFrame(local.getTitle());
+		JFrame frame = new JFrame(Lang.lang.getTitle(LangTitlesRef.APP_TITLE));
 		frame.setIconImage(img.getImage());
 		
 		JPanel contentPane = (JPanel)frame.getContentPane();
 		
-		Window window = new Window(frame, contentPane, res, local, path, reso);
+		Window window = new Window(frame, contentPane, res, path, reso);
 		
 		window.makeMenus();
 		window.makeContent("");

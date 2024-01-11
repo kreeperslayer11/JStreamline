@@ -1,4 +1,4 @@
-package util;
+package util.json.generator;
 
 import java.util.ArrayList;
 import java.util.Arrays;

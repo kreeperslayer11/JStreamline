@@ -8,7 +8,7 @@ import templates.json.models.BasicItem;
 import templates.json.models.BlockBlock;
 import templates.json.models.BlockItem;
 import templates.json.models.Tool;
-import util.JsonType;
+import util.json.generator.JsonType;
 
 public class JsonPreview 
 {

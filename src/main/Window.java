@@ -11,13 +11,21 @@ import java.util.Map.Entry;
 
 import javax.swing.*;
 
-import templates.json.savedata.Save;
+import templates.json.savedata.lang.Lang;
+import templates.json.savedata.settings.Save;
 import util.FileHandler;
-import util.JsonFlag;
-import util.JsonType;
-import util.Localization;
 import util.RefInt;
+import util.ResVals;
 import util.Resolution;
+import util.json.generator.JsonFlag;
+import util.json.generator.JsonType;
+import util.reference.LangDefaultValueRef;
+import util.reference.LangMenuRef;
+import util.reference.LangMessageRef;
+import util.reference.LangResRef;
+import util.reference.LangTitlesRef;
+import util.reference.LangUIButtonsRef;
+import util.reference.LangUIFieldsRef;
 
 public class Window 
 {
@@ -25,7 +33,6 @@ public class Window
 	private JFrame frame;
 	private JPanel contentPane;
 	private Resolution res;
-	private Localization local;
 	private JPanel south, east, west, center;
 	//private ArrayList<JsonPreview> jsons;
 	private Map<Component, JsonPreview> jsons;
@@ -39,18 +46,17 @@ public class Window
 			chestplateField = new RefInt(), leggingsField = new RefInt(), bootsField = new RefInt();
 	private ArrayList<Integer> componentList = new ArrayList<>();
 	
-	public Window(JFrame frame, JPanel contentPane, Resolution res, Localization local, String path, String reso)
+	public Window(JFrame frame, JPanel contentPane, Resolution res, String path, String reso)
 	{
 		this.flag = JsonFlag.Empty;
 		this.frame = frame;
 		this.contentPane = contentPane;
 		this.res = res;
-		this.local = local;
 		this.path = path;
 		this.message = "";
-		this.mod_id = local.getDefaults(0);
-		this.pref = local.getDefaults(1);
-		this.name = local.getDefaults(2);
+		this.mod_id = Lang.lang.getDefaultText(LangDefaultValueRef.MOD_ID);
+		this.pref = Lang.lang.getDefaultText(LangDefaultValueRef.TEXTURE);
+		this.name = Lang.lang.getDefaultText(LangDefaultValueRef.NAME);
 		
 		contentPane.setLayout(new BorderLayout(res.getBorder(), res.getBorder()));
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -116,30 +122,44 @@ public class Window
     	frame.setJMenuBar(menuBar);
     	
     	//FILE=================================================================
-    	menu = makeMenu(menuBar, local.getMenus(0), KeyEvent.VK_F);
+    	menu = makeMenu(menuBar, Lang.lang.getMenu(LangMenuRef.FILE), KeyEvent.VK_F);
     	//FILE SUB MENU=========================================================
-    	makeMenuOption(menu, local.getMenus(1), makeResetListener());//reset
+    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.RESET), makeResetListener());//reset
     	
-    	pre = makeMenu(menu, local.getMenus(2));//options
+    	pre = makeMenu(menu, Lang.lang.getMenu(LangMenuRef.OPTIONS));//options
     	
-    	sub = makeMenu(pre, local.getMenus(5));//resolutions
-    	for (int i = 0; i < local.getResLength(); i++)
+    	sub = makeMenu(pre, Lang.lang.getMenu(LangMenuRef.RESOLUTION));//resolutions
+    	for (int i = 0; i < ResVals.values().length; i++)
     	{
-    		makeMenuOption(sub, local.getRes(i), makeResolutionListener(i));//individual resolution
+    		ResVals resolution = ResVals.values()[i];
+    		String resKey;
+    		if (resolution == ResVals.DEFAULT)
+    		{
+    			resKey = LangResRef.DEFAULT;
+    		}
+    		else
+    		{
+    			resKey = resolution.getWidth() + "x" + resolution.getHeight();
+    		}
+    		makeMenuOption(sub, Lang.lang.getRes(resKey), makeResolutionListener(i));
     	}
+    	//for (int i = 0; i < local.getResLength(); i++)
+    	//{
+    	//	makeMenuOption(sub, local.getRes(i), makeResolutionListener(i));//individual resolution
+    	//}
     	
-    	makeMenuOption(pre, local.getMenus(3), null);//language
+    	makeMenuOption(pre, Lang.lang.getMenu(LangMenuRef.LANGUAGE), null);//language
     	
     	//TODO: exit listener
-    	makeMenuOption(menu, local.getMenus(4), null);//exit
+    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.EXIT), null);//exit
     	//END FILE==============================================================
     	//TYPES=================================================================
-    	menu = makeMenu(menuBar, local.getMenus(6), KeyEvent.VK_T);
+    	menu = makeMenu(menuBar, Lang.lang.getMenu(LangMenuRef.TYPES), KeyEvent.VK_T);
     	//TYPES SUB MENU========================================================
-    	makeMenuOption(menu, local.getMenus(7), makeTypeListener(JsonFlag.BasicItem));
-    	makeMenuOption(menu, local.getMenus(8), makeTypeListener(JsonFlag.Tool));
-    	makeMenuOption(menu, local.getMenus(9), makeTypeListener(JsonFlag.Armor));
-    	makeMenuOption(menu, local.getMenus(10), makeTypeListener(JsonFlag.Block));
+    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.BASIC_ITEM), makeTypeListener(JsonFlag.BasicItem));
+    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.TOOL_SET), makeTypeListener(JsonFlag.Tool));
+    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.ARMOR_SET), makeTypeListener(JsonFlag.Armor));
+    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.BLOCKS), makeTypeListener(JsonFlag.Block));
 	}
 	
 	private ActionListener makeResolutionListener(int num)
@@ -283,7 +303,7 @@ public class Window
 	private void submitButton(JPanel panel)
 	{
 		//submit
-	    JButton jbutton = new JButton(local.getUIopt(5));
+	    JButton jbutton = new JButton(Lang.lang.getUIButton(LangUIButtonsRef.SUBMIT));
     	fontChange(jbutton);
     	jbutton.setFocusable(false);
 	    
@@ -295,7 +315,7 @@ public class Window
 	private JPanel makeWestRegion()
 	{
 		JPanel panel = new JPanel();
-		panel.setBorder(BorderFactory.createTitledBorder(local.getSelection()));
+		panel.setBorder(BorderFactory.createTitledBorder(Lang.lang.getTitle(LangTitlesRef.SELECTIONS)));
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		fontChange(panel);
 		
@@ -316,9 +336,9 @@ public class Window
 			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 40, 0, 0));
 		    panel.add(sizer);
 			
-		    MakeTextBox(panel, local.getBscItm(2), name, nameField);
-		    MakeTextBox(panel, local.getBscItm(1), pref, textureField);
-		    MakeTextBox(panel, local.getBscItm(0), mod_id, modidField);
+		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.NAME), name, nameField);
+		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.TEXTURE), pref, textureField);
+		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.MOD_ID), mod_id, modidField);
 		    
 		    submitButton(panel);
 		}
@@ -328,18 +348,18 @@ public class Window
 			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 47, 0, 0));
 		    panel.add(sizer);
 		    
-		    MakeTextBox(panel, local.getTools(2), name, nameField);
-		    MakeTextBox(panel, local.getTools(1), pref, textureField);
-		    MakeTextBox(panel, local.getTools(0), mod_id, modidField);
+		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.SET_NAME), name, nameField);
+		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.TEXTURE_PREFIX), pref, textureField);
+		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.MOD_ID), mod_id, modidField);
 		    //postfixes
-		    JLabel ider = new JLabel(local.getTools(3));
+		    JLabel ider = new JLabel(Lang.lang.getUILabel(LangUIFieldsRef.POSTFIX));
 			//ider.setBorder(BorderFactory.createEmptyBorder(0, res.getBorder() + 2, 0, 0));
 		    panel.add(ider);
-			MakeTextBox(panel, local.getTools(4), local.getDefaults(3), swordField);
-			MakeTextBox(panel, local.getTools(5), local.getDefaults(4), axeField);
-			MakeTextBox(panel, local.getTools(6), local.getDefaults(5), shovelField);
-			MakeTextBox(panel, local.getTools(7), local.getDefaults(6), pickaxeField);
-			MakeTextBox(panel, local.getTools(8), local.getDefaults(7), hoeField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.SWORD), Lang.lang.getDefaultText(LangDefaultValueRef.SWORD), swordField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.AXE), Lang.lang.getDefaultText(LangDefaultValueRef.AXE), axeField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.SHOVEL), Lang.lang.getDefaultText(LangDefaultValueRef.SHOVEL), shovelField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.PICKAXE), Lang.lang.getDefaultText(LangDefaultValueRef.PICKAXE), pickaxeField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.HOE), Lang.lang.getDefaultText(LangDefaultValueRef.HOE), hoeField);
 			componentList.addAll(Arrays.asList(new Integer[] { swordField.value, axeField.value, shovelField.value, pickaxeField.value, hoeField.value }));
 		    
 			submitButton(panel);
@@ -351,17 +371,17 @@ public class Window
 			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 47, 0, 0));
 		    panel.add(sizer);
 		    
-		    MakeTextBox(panel, local.getArmors(2), name, nameField);
-		    MakeTextBox(panel, local.getArmors(1), pref, textureField);
-		    MakeTextBox(panel, local.getArmors(0), mod_id, modidField);
+		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.SET_NAME), name, nameField);
+		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.TEXTURE_PREFIX), pref, textureField);
+		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.MOD_ID), mod_id, modidField);
 		    //postfixes
-		    JLabel ider = new JLabel(local.getTools(3));
+		    JLabel ider = new JLabel(Lang.lang.getUILabel(LangUIFieldsRef.POSTFIX));
 			//ider.setBorder(BorderFactory.createEmptyBorder(0, res.getBorder() + 2, 0, 0));
 			panel.add(ider);
-			MakeTextBox(panel, local.getArmors(3), local.getDefaults(8), helmetField);
-			MakeTextBox(panel, local.getArmors(4), local.getDefaults(9), chestplateField);
-			MakeTextBox(panel, local.getArmors(5), local.getDefaults(10), leggingsField);
-			MakeTextBox(panel, local.getArmors(6), local.getDefaults(11), bootsField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.HELMET), Lang.lang.getDefaultText(LangDefaultValueRef.HELMET), helmetField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.CHESTPLATE), Lang.lang.getDefaultText(LangDefaultValueRef.CHESTPLATE), chestplateField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.LEGGINGS), Lang.lang.getDefaultText(LangDefaultValueRef.LEGGINGS), leggingsField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.BOOTS), Lang.lang.getDefaultText(LangDefaultValueRef.BOOTS), bootsField);
 			componentList.addAll(Arrays.asList(new Integer[] { helmetField.value, chestplateField.value, leggingsField.value, bootsField.value }));
 		    
 			submitButton(panel);
@@ -372,9 +392,9 @@ public class Window
 			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 40, 0, 0));
 		    panel.add(sizer);
 			
-		    MakeTextBox(panel, local.getBlks(2), name, nameField);
-		    MakeTextBox(panel, local.getBlks(1), pref, textureField);
-		    MakeTextBox(panel, local.getBlks(0), mod_id, modidField);
+		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.BLOCK_NAME), name, nameField);
+		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.TEXTURE), pref, textureField);
+		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.MOD_ID), mod_id, modidField);
 		    
 		    submitButton(panel);
 		}
@@ -516,7 +536,7 @@ public class Window
 		JPanel panel = new JPanel();
 		
 		panel.setLayout(new GridLayout());
-		panel.setBorder(BorderFactory.createTitledBorder(local.getSpecial()));
+		panel.setBorder(BorderFactory.createTitledBorder(Lang.lang.getTitle(LangTitlesRef.JSON_BOX)));
 		fontChange(panel);
 		
 		//JTabbedPane tabs = new JTabbedPane(JTabbedPane.TOP);
@@ -534,7 +554,7 @@ public class Window
 	{
 		JPanel panel = new JPanel();
 		//save all
-		panel.setBorder(BorderFactory.createTitledBorder(local.getUIopt(6)));
+		panel.setBorder(BorderFactory.createTitledBorder(Lang.lang.getTitle(LangTitlesRef.SAVE)));
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		fontChange(panel);
 		
@@ -545,18 +565,18 @@ public class Window
 	    panel.add(sizer);
 	    
 	    //save as file
-	    JButton saveAsButton = new JButton(local.getUIopt(0));
+	    JButton saveAsButton = new JButton(Lang.lang.getUIButton(LangUIButtonsRef.SAVE_AS));
 	    //tool tip
-	    saveAsButton.setToolTipText(local.getUIopt(1));
+	    saveAsButton.setToolTipText(Lang.lang.getUIButton(LangUIButtonsRef.SAVE_AS_HOVER));
     	fontChange(saveAsButton);
     	saveAsButton.setFocusable(false);
 	    
 	    saveAsButton.addActionListener( makeSaveAsListener(panel) );
 	    
 	    //save file
-	    JButton saveButton = new JButton(local.getUIopt(2));
+	    JButton saveButton = new JButton(Lang.lang.getUIButton(LangUIButtonsRef.SAVE));
 	    //tool tip
-	    saveButton.setToolTipText(local.getUIopt(3));
+	    saveButton.setToolTipText(Lang.lang.getUIButton(LangUIButtonsRef.SAVE_HOVER));
 	    fontChange(saveButton);
 	    saveButton.setFocusable(false);
 	    
@@ -615,7 +635,7 @@ public class Window
 				JFileChooser save = new JFileChooser();
 				save.setCurrentDirectory(new java.io.File(path));
 				//save
-				save.setDialogTitle(local.getUIopt(4));
+				save.setDialogTitle(Lang.lang.getTitle(LangTitlesRef.SAVE_DIALOG));
 				save.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				save.setAcceptAllFileFilterUsed(false);
 				
@@ -633,9 +653,9 @@ public class Window
 				{
 					path = localPath;
 					int[] tmp = saveJsons();
-					messageFollows = (tmp[0] > 0 ? (tmp[0] + " " + local.getMsgs(1)) : "")
+					messageFollows = (tmp[0] > 0 ? (tmp[0] + " " + Lang.lang.getMessage(LangMessageRef.SAVED)) : "")
 							+ (tmp[0] > 0 && tmp[1] > 0 ? " " : "")
-							+ (tmp[1] > 0 ? (tmp[1] + " " + local.getMsgs(0)) : "");
+							+ (tmp[1] > 0 ? (tmp[1] + " " + Lang.lang.getMessage(LangMessageRef.FAILED)) : "");
 					//File file = new File(this.getClass().getClassLoader().getResource(Reference.DATA_FILE).getFile().replace("%20", " "));
 					if (!Save.save.updatePath(path))
 					{
@@ -666,9 +686,9 @@ public class Window
 				}
 				
 				int[] tmp = saveJsons();
-				String messageFollows = (tmp[0] > 0 ? (tmp[0] + " " + local.getMsgs(1)) : "")
+				String messageFollows = (tmp[0] > 0 ? (tmp[0] + " " + Lang.lang.getMessage(LangMessageRef.SAVED)) : "")
 						+ (tmp[0] > 0 && tmp[1] > 0 ? " " : "")
-						+ (tmp[1] > 0 ? (tmp[1] + " " + local.getMsgs(0)) : "");
+						+ (tmp[1] > 0 ? (tmp[1] + " " + Lang.lang.getMessage(LangMessageRef.FAILED)) : "");
 				tabs = new JTabbedPane(JTabbedPane.TOP);
 				jsons = new HashMap<>();
 				currentIndex = -1;
@@ -690,7 +710,7 @@ public class Window
 	{
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-		panel.setBorder(BorderFactory.createTitledBorder(local.getMessage()));
+		panel.setBorder(BorderFactory.createTitledBorder(Lang.lang.getTitle(LangTitlesRef.MESSAGE_BOX)));
 		fontChange(panel);
 		
 		JTextPane label = new JTextPane();
@@ -699,7 +719,7 @@ public class Window
 		fontChange(label);
 		
 		//set the read only text "save to: "
-		label.setText(local.getMsgs(2) + path + "\n" + message);
+		label.setText(Lang.lang.getMessage(LangMessageRef.SAVES_TO) + path + "\n" + message);
 		
 		panel.add(label);
 		contentPane.add(panel, BorderLayout.SOUTH);

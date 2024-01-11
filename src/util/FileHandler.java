@@ -8,6 +8,11 @@ import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
+
 public class FileHandler
 {
 	public static boolean doesFileSystemItemExist(String path, String directory)
@@ -50,6 +55,35 @@ public class FileHandler
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	public static JsonObject readInResource(String filepath)
+	{
+		File file = new File(filepath);
+		if (!doesFileSystemItemExist(Reference.RESOURCES_FOLD))
+		{
+			directoryExists(Reference.RESOURCES_FOLD);
+		}
+		if (!doesFileSystemItemExist(Reference.LANG_FOLD))
+		{
+			directoryExists(Reference.LANG_FOLD);
+		}
+		createFile(file);
+		String content = readFileExists(file);
+		JsonElement json;
+		try
+		{
+			json = JsonParser.parseString(content);
+		}
+		catch (JsonSyntaxException e)
+		{
+			json = JsonParser.parseString("{}");
+		}
+		if (json.isJsonObject())
+		{
+			return json.getAsJsonObject();
+		}
+		return new JsonObject();
 	}
 	
 	public static String readFileExists(File file)
