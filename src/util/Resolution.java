@@ -52,21 +52,32 @@ public class Resolution
 	
 	public int getIndexFromSaveData(String[] splitOnX)
 	{
-		for (int i = 0; i < resolutions.size(); i++)
+		if (splitOnX.length != 2)
 		{
-			if (resolutions.get(i).getWidth() == Integer.parseInt(splitOnX[0]))
+			return 0;
+		}
+		try
+		{
+			for (int i = 0; i < resolutions.size(); i++)
 			{
-				for (int j = 0; j < resolutions.size(); j++)
+				if (resolutions.get(i).getWidth() == Integer.parseInt(splitOnX[0]))
 				{
-					if (resolutions.get(i).getHeight() == Integer.parseInt(splitOnX[1]))
+					for (int j = 0; j < resolutions.size(); j++)
 					{
-						if (i == j)
+						if (resolutions.get(i).getHeight() == Integer.parseInt(splitOnX[1]))
 						{
-							return i;
+							if (i == j)
+							{
+								return i;
+							}
 						}
 					}
 				}
 			}
+		}
+		catch (NumberFormatException e)
+		{
+			return 0;
 		}
 		return 0;
 	}

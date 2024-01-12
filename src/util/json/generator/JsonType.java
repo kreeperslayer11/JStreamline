@@ -1,4 +1,6 @@
-package util;
+package util.json.generator;
+
+import util.Reference;
 
 public enum JsonType 
 {

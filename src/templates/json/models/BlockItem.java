@@ -1,7 +1,7 @@
 package templates.json.models;
 
 import templates.json.JsonSerializable;
-import util.JsonType;
+import util.json.generator.JsonType;
 
 public class BlockItem extends JsonSerializable
 {

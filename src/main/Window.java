@@ -2,25 +2,31 @@ package main;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Scanner;
 
 import javax.swing.*;
 
-import util.JsonFlag;
-import util.JsonType;
-import util.Localization;
+import templates.json.savedata.lang.Lang;
+import templates.json.savedata.settings.Save;
+import util.FileHandler;
+import util.Language;
 import util.RefInt;
-import util.Reference;
+import util.ResVals;
 import util.Resolution;
+import util.json.generator.JsonFlag;
+import util.json.generator.JsonType;
+import util.reference.LangDefaultValueRef;
+import util.reference.LangMenuRef;
+import util.reference.LangMessageRef;
+import util.reference.LangResRef;
+import util.reference.LangTitlesRef;
+import util.reference.LangUIButtonsRef;
+import util.reference.LangUIFieldsRef;
 
 public class Window 
 {
@@ -28,10 +34,11 @@ public class Window
 	private JFrame frame;
 	private JPanel contentPane;
 	private Resolution res;
-	private Localization local;
 	private JPanel south, east, west, center;
 	//private ArrayList<JsonPreview> jsons;
 	private Map<Component, JsonPreview> jsons;
+	private Map<Component, JScrollPane> tabMap;
+	private Map<Component, JsonPreview> failedSaves;
 	private JTabbedPane tabs;
 	private int currentIndex = -1;
 	private String path, message, mod_id, pref, name;
@@ -40,22 +47,22 @@ public class Window
 			swordField = new RefInt(), axeField = new RefInt(), shovelField = new RefInt(), 
 			pickaxeField = new RefInt(), hoeField = new RefInt(), helmetField = new RefInt(), 
 			chestplateField = new RefInt(), leggingsField = new RefInt(), bootsField = new RefInt();
+	private ArrayList<Integer> componentList = new ArrayList<>();
 	
-	public Window(JFrame frame, JPanel contentPane, Resolution res, Localization local, String path, String reso)
+	public Window(JFrame frame, JPanel contentPane, Resolution res, String path, String reso)
 	{
 		this.flag = JsonFlag.Empty;
 		this.frame = frame;
 		this.contentPane = contentPane;
 		this.res = res;
-		this.local = local;
 		this.path = path;
 		this.message = "";
-		this.mod_id = local.getDefaults(0);
-		this.pref = local.getDefaults(1);
-		this.name = local.getDefaults(2);
+		this.mod_id = Lang.lang.getDefaultText(LangDefaultValueRef.MOD_ID);
+		this.pref = Lang.lang.getDefaultText(LangDefaultValueRef.TEXTURE);
+		this.name = Lang.lang.getDefaultText(LangDefaultValueRef.NAME);
 		
 		contentPane.setLayout(new BorderLayout(res.getBorder(), res.getBorder()));
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		
 		if(reso == null)
 		{
@@ -65,13 +72,15 @@ public class Window
 		{
 			String[] s = reso.split("x");
 			res.resolutionChange(res.getIndexFromSaveData(s));
-			frame.setSize(Integer.parseInt(s[0]), Integer.parseInt(s[1]));
+			frame.setSize(res.getWidth(), res.getHeight());
 		}
 		
 		frame.setVisible(true);
 		frame.setResizable(false);
 		//contentPane.setPreferredSize(new Dimension(res.getWidth(), res.getHeight()));
 		this.jsons = new HashMap<>();
+		this.tabMap = new HashMap<>();
+		this.failedSaves = new HashMap<>();
 		tabs = new JTabbedPane(JTabbedPane.TOP);
 	}
 	
@@ -118,30 +127,45 @@ public class Window
     	frame.setJMenuBar(menuBar);
     	
     	//FILE=================================================================
-    	menu = makeMenu(menuBar, local.getMenus(0), KeyEvent.VK_F);
+    	menu = makeMenu(menuBar, Lang.lang.getMenu(LangMenuRef.FILE), KeyEvent.VK_F);
     	//FILE SUB MENU=========================================================
-    	makeMenuOption(menu, local.getMenus(1), makeResetListener());//reset
+    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.RESET), makeResetListener());//reset
     	
-    	pre = makeMenu(menu, local.getMenus(2));//options
+    	pre = makeMenu(menu, Lang.lang.getMenu(LangMenuRef.OPTIONS));//options
     	
-    	sub = makeMenu(pre, local.getMenus(5));//resolutions
-    	for (int i = 0; i < local.getResLength(); i++)
+    	sub = makeMenu(pre, Lang.lang.getMenu(LangMenuRef.RESOLUTION));//resolutions
+    	for (int i = 0; i < ResVals.values().length; i++)
     	{
-    		makeMenuOption(sub, local.getRes(i), makeResolutionListener(i));//individual resolution
+    		ResVals resolution = ResVals.values()[i];
+    		String resKey;
+    		if (resolution == ResVals.DEFAULT)
+    		{
+    			resKey = LangResRef.DEFAULT;
+    		}
+    		else
+    		{
+    			resKey = resolution.getWidth() + "x" + resolution.getHeight();
+    		}
+    		makeMenuOption(sub, Lang.lang.getRes(resKey), makeResolutionListener(i));
     	}
     	
-    	makeMenuOption(pre, local.getMenus(3), null);//language
+    	sub = makeMenu(pre, Lang.lang.getMenu(LangMenuRef.LANGUAGE));//language
+    	String[] langs = Language.lang.getLangs();
+    	for (int i = 0; i < langs.length; i++)
+    	{
+    		makeMenuOption(sub, langs[i], makeLangListener(langs[i]));
+    	}
     	
     	//TODO: exit listener
-    	makeMenuOption(menu, local.getMenus(4), null);//exit
+    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.EXIT), null);//exit
     	//END FILE==============================================================
     	//TYPES=================================================================
-    	menu = makeMenu(menuBar, local.getMenus(6), KeyEvent.VK_T);
+    	menu = makeMenu(menuBar, Lang.lang.getMenu(LangMenuRef.TYPES), KeyEvent.VK_T);
     	//TYPES SUB MENU========================================================
-    	makeMenuOption(menu, local.getMenus(7), makeTypeListener(JsonFlag.BasicItem));
-    	makeMenuOption(menu, local.getMenus(8), makeTypeListener(JsonFlag.Tool));
-    	makeMenuOption(menu, local.getMenus(9), makeTypeListener(JsonFlag.Armor));
-    	makeMenuOption(menu, local.getMenus(10), makeTypeListener(JsonFlag.Block));
+    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.BASIC_ITEM), makeTypeListener(JsonFlag.BasicItem));
+    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.TOOL_SET), makeTypeListener(JsonFlag.Tool));
+    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.ARMOR_SET), makeTypeListener(JsonFlag.Armor));
+    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.BLOCKS), makeTypeListener(JsonFlag.Block));
 	}
 	
 	private ActionListener makeResolutionListener(int num)
@@ -151,48 +175,20 @@ public class Window
     			res.resolutionChange(num);
     			killContent();
     			frame.setSize(res.getWidth(), res.getHeight());
-    			File file = new File(Reference.DATA_FILE);
-    			Scanner scan;
-				try {
-					scan = new Scanner(file);
-					String line = ".";
-					String contents = "";
-					if(scan.hasNext())
-					{
-						line = scan.next();
-					}
-					if(scan.hasNext())
-					{
-						scan.next();
-					}
-					while(scan.hasNext())
-					{
-						contents = "\n" + scan.next();
-					}
-					scan.close();
-					
-					FileWriter fw = new FileWriter(file.getAbsoluteFile());
-					BufferedWriter bw = new BufferedWriter(fw);
-					bw.write(line);
-					bw.write("\n" + res.getWidth() + "x" + res.getHeight());
-					bw.write(contents);
-					bw.close();
-					
-				} 
-				catch (FileNotFoundException e1) 
-				{
-					e1.printStackTrace();
-				} 
-				catch (IOException e1) 
-				{
-					e1.printStackTrace();
-				}
-    			
-    			//makeMenus();
-    			//makeContent();
+    			Save.save.updateRes(res.getWidth() + "x" + res.getHeight());
     			refreshContent("");
     		}
     	};
+	}
+	
+	private ActionListener makeLangListener(String lang) {
+		return new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Save.save.updateLang(lang);
+				Lang.rebindToSave();
+				refreshContent("");
+			}
+		};
 	}
 	
 	private ActionListener makeTypeListener(JsonFlag num)
@@ -316,31 +312,53 @@ public class Window
 		fontChange(label);
 		label.setText(text);
 		label.setMaximumSize(new Dimension(res.getWidth() / 2, res.getFontSize() * 2));
+		label.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+            	label.select(0, label.getText().length());
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                label.select(0, 0);
+            }
+        });
 		panel.add(label);
 		fieldId.value = panel.getComponentCount() - 1;
 	}
 	
+	private JButton makeButton(JPanel into, String text, String hoverMessage, ActionListener listener)
+	{
+		JButton button = new JButton(text);
+	    //tool tip
+		if (hoverMessage != null)
+		{
+			button.setToolTipText(hoverMessage);			
+		}
+    	fontChange(button);
+    	button.setFocusable(false);
+	    
+	    button.addActionListener( listener );
+	    
+	    into.add(button);
+	    return button;
+	}
+	
 	private void submitButton(JPanel panel)
 	{
-		//submit
-	    JButton jbutton = new JButton(local.getUIopt(5));
-    	fontChange(jbutton);
-    	jbutton.setFocusable(false);
-	    
-	    jbutton.addActionListener( makeSubmitListener(panel, flag) );
-	    
-	    panel.add(jbutton);
+		makeButton(panel, Lang.lang.getUIButton(LangUIButtonsRef.SUBMIT), null, makeFilesAfterSubmit(panel, flag)).setFocusable(true);
 	}
 	
 	private JPanel makeWestRegion()
 	{
 		JPanel panel = new JPanel();
-		panel.setBorder(BorderFactory.createTitledBorder(local.getSelection()));
+		panel.setBorder(BorderFactory.createTitledBorder(Lang.lang.getTitle(LangTitlesRef.SELECTIONS)));
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		fontChange(panel);
 		
 		JLabel sizer = new JLabel("");
 		
+		componentList.clear();
 		
 		//NO SELECTION
 		if(flag == JsonFlag.Empty)
@@ -355,9 +373,9 @@ public class Window
 			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 40, 0, 0));
 		    panel.add(sizer);
 			
-		    MakeTextBox(panel, local.getBscItm(2), name, nameField);
-		    MakeTextBox(panel, local.getBscItm(1), pref, textureField);
-		    MakeTextBox(panel, local.getBscItm(0), mod_id, modidField);
+		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.NAME), name, nameField);
+		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.TEXTURE), pref, textureField);
+		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.MOD_ID), mod_id, modidField);
 		    
 		    submitButton(panel);
 		}
@@ -367,18 +385,19 @@ public class Window
 			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 47, 0, 0));
 		    panel.add(sizer);
 		    
-		    MakeTextBox(panel, local.getTools(2), name, nameField);
-		    MakeTextBox(panel, local.getTools(1), pref, textureField);
-		    MakeTextBox(panel, local.getTools(0), mod_id, modidField);
+		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.SET_NAME), name, nameField);
+		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.TEXTURE_PREFIX), pref, textureField);
+		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.MOD_ID), mod_id, modidField);
 		    //postfixes
-		    JLabel ider = new JLabel(local.getTools(3));
+		    JLabel ider = new JLabel(Lang.lang.getUILabel(LangUIFieldsRef.POSTFIX));
 			//ider.setBorder(BorderFactory.createEmptyBorder(0, res.getBorder() + 2, 0, 0));
 		    panel.add(ider);
-			MakeTextBox(panel, local.getTools(4), local.getDefaults(3), swordField);
-			MakeTextBox(panel, local.getTools(5), local.getDefaults(4), axeField);
-			MakeTextBox(panel, local.getTools(6), local.getDefaults(5), shovelField);
-			MakeTextBox(panel, local.getTools(7), local.getDefaults(6), pickaxeField);
-			MakeTextBox(panel, local.getTools(8), local.getDefaults(7), hoeField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.SWORD), Lang.lang.getDefaultText(LangDefaultValueRef.SWORD), swordField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.AXE), Lang.lang.getDefaultText(LangDefaultValueRef.AXE), axeField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.SHOVEL), Lang.lang.getDefaultText(LangDefaultValueRef.SHOVEL), shovelField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.PICKAXE), Lang.lang.getDefaultText(LangDefaultValueRef.PICKAXE), pickaxeField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.HOE), Lang.lang.getDefaultText(LangDefaultValueRef.HOE), hoeField);
+			componentList.addAll(Arrays.asList(new Integer[] { swordField.value, axeField.value, shovelField.value, pickaxeField.value, hoeField.value }));
 		    
 			submitButton(panel);
 		}
@@ -389,17 +408,18 @@ public class Window
 			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 47, 0, 0));
 		    panel.add(sizer);
 		    
-		    MakeTextBox(panel, local.getArmors(2), name, nameField);
-		    MakeTextBox(panel, local.getArmors(1), pref, textureField);
-		    MakeTextBox(panel, local.getArmors(0), mod_id, modidField);
+		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.SET_NAME), name, nameField);
+		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.TEXTURE_PREFIX), pref, textureField);
+		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.MOD_ID), mod_id, modidField);
 		    //postfixes
-		    JLabel ider = new JLabel(local.getTools(3));
+		    JLabel ider = new JLabel(Lang.lang.getUILabel(LangUIFieldsRef.POSTFIX));
 			//ider.setBorder(BorderFactory.createEmptyBorder(0, res.getBorder() + 2, 0, 0));
 			panel.add(ider);
-			MakeTextBox(panel, local.getArmors(3), local.getDefaults(8), helmetField);
-			MakeTextBox(panel, local.getArmors(4), local.getDefaults(9), chestplateField);
-			MakeTextBox(panel, local.getArmors(5), local.getDefaults(10), leggingsField);
-			MakeTextBox(panel, local.getArmors(6), local.getDefaults(11), bootsField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.HELMET), Lang.lang.getDefaultText(LangDefaultValueRef.HELMET), helmetField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.CHESTPLATE), Lang.lang.getDefaultText(LangDefaultValueRef.CHESTPLATE), chestplateField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.LEGGINGS), Lang.lang.getDefaultText(LangDefaultValueRef.LEGGINGS), leggingsField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.BOOTS), Lang.lang.getDefaultText(LangDefaultValueRef.BOOTS), bootsField);
+			componentList.addAll(Arrays.asList(new Integer[] { helmetField.value, chestplateField.value, leggingsField.value, bootsField.value }));
 		    
 			submitButton(panel);
 		}
@@ -409,37 +429,15 @@ public class Window
 			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 40, 0, 0));
 		    panel.add(sizer);
 			
-		    MakeTextBox(panel, local.getBlks(2), name, nameField);
-		    MakeTextBox(panel, local.getBlks(1), pref, textureField);
-		    MakeTextBox(panel, local.getBlks(0), mod_id, modidField);
+		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.BLOCK_NAME), name, nameField);
+		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.TEXTURE), pref, textureField);
+		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.MOD_ID), mod_id, modidField);
 		    
 		    submitButton(panel);
 		}
 		
 		contentPane.add(panel, BorderLayout.WEST);
 		return panel;
-	}
-	
-	private ActionListener makeSubmitListener(JPanel panel, JsonFlag kind)
-	{
-		if(kind == JsonFlag.BasicItem)
-		{
-			return makeBasicSubmit(panel);
-		}
-		else if(kind == JsonFlag.Tool)
-		{
-			return makeToolSubmit(panel);
-		}
-		else if(kind == JsonFlag.Armor)
-		{
-			return makeArmorSubmit(panel);
-		}
-		else if(kind == JsonFlag.Block)
-		{
-			return makeBlockSubmit(panel);
-		}
-		return makeBasicSubmit(panel);
-		
 	}
 	
 	private void tabMaker(String text, JsonPreview prev, boolean inner, int j)
@@ -500,136 +498,48 @@ public class Window
 		tabPanel.add(buttonClose, gbc);
 		tabs.setTabComponentAt(index, tabPanel);
 		jsons.put(tabPanel, prev);
+		tabMap.put(tabPanel, scroll);
 		buttonClose.addActionListener(makeCloseTabListener(tabPanel, scroll, inner, inner ? prev.getOptions().get(j) : ""));
 	}
 	
-	/**
-	 * create json on button press for items
-	 * @param panel
-	 * @return
-	 */
-	private ActionListener makeBasicSubmit(JPanel panel)
+	private void getUbiquitousText(JPanel panel)
+	{
+		name = ((JTextField)panel.getComponent(nameField.value)).getText();
+		pref = ((JTextField)panel.getComponent(textureField.value)).getText();
+		mod_id = ((JTextField)panel.getComponent(modidField.value)).getText();
+	}
+	
+	private ActionListener makeFilesAfterSubmit(JPanel panel, JsonFlag kind)
 	{
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String itemName = ((JTextField)panel.getComponent(nameField.value)).getText();
-				String texture = ((JTextField)panel.getComponent(textureField.value)).getText();
-				String modid = ((JTextField)panel.getComponent(modidField.value)).getText();
-				mod_id = modid;
-				pref = texture;
-				name = itemName;
-				
-				JsonPreview prev = new JsonPreview(JsonType.BASIC, itemName, texture, modid);
-				//jsons.add(prev);
-				
-				String text = prev.getFiles()[0];
-				tabMaker(text, prev, false, 0);
-			}
-		};
-	}
-	
-	/**
-	 * create jsons on button press for tool sets
-	 * @param panel
-	 * @return
-	 */
-	private ActionListener makeToolSubmit(JPanel panel)
-	{
-		return new ActionListener() {
-    		public void actionPerformed(ActionEvent e) {
-    			String setName = ((JTextField)panel.getComponent(nameField.value)).getText();
-    			String prefix = ((JTextField)panel.getComponent(textureField.value)).getText();
-    			String modid = ((JTextField)panel.getComponent(modidField.value)).getText();
-    			mod_id = modid;
-    			pref = prefix;
-    			name = setName;
-    			
-    			ArrayList<String> post = new ArrayList<String>();
-    			post.add(((JTextField)panel.getComponent(swordField.value)).getText());
-    			post.add(((JTextField)panel.getComponent(axeField.value)).getText());
-    			post.add(((JTextField)panel.getComponent(shovelField.value)).getText());
-    			post.add(((JTextField)panel.getComponent(pickaxeField.value)).getText());
-    			post.add(((JTextField)panel.getComponent(hoeField.value)).getText());
-    			
-    			JsonPreview prev = new JsonPreview(JsonType.TOOL_SET, setName, prefix, modid).add(post);
-    			String[] files = prev.getFiles();
-    			//jsons.add(prev);
-
-    			for(int j = 0; j < prev.getOptions().size(); j++)
+				getUbiquitousText(panel);
+				ArrayList<String> components = new ArrayList<>();
+				for (int i = 0; i < componentList.size(); i++)
 				{
-					String text = files[j];
-					
-					tabMaker(text, prev, true, j);
+					components.add(((JTextField)panel.getComponent(componentList.get(i))).getText());
 				}
-    		}
-    	};
-	}
-	
-	/**
-	 * create jsons on button press for armor sets
-	 * @param panel
-	 * @return
-	 */
-	private ActionListener makeArmorSubmit(JPanel panel)
-	{
-		return new ActionListener() {
-    		public void actionPerformed(ActionEvent e) {
-    			String setName = ((JTextField)panel.getComponent(nameField.value)).getText();
-    			String prefix = ((JTextField)panel.getComponent(textureField.value)).getText();
-    			String modid = ((JTextField)panel.getComponent(modidField.value)).getText();
-    			mod_id = modid;
-    			pref = prefix;
-    			name = setName;
-    			
-    			ArrayList<String> post = new ArrayList<String>();
-    			post.add(((JTextField)panel.getComponent(helmetField.value)).getText());
-    			post.add(((JTextField)panel.getComponent(chestplateField.value)).getText());
-    			post.add(((JTextField)panel.getComponent(leggingsField.value)).getText());
-    			post.add(((JTextField)panel.getComponent(bootsField.value)).getText());
-    			
-    			JsonPreview prev = new JsonPreview(JsonType.ARMOR_SET, setName, prefix, modid).add(post);
-    			//jsons.add(prev);
-    			String[] files = prev.getFiles();
-
-    			for(int j = 0; j < prev.getOptions().size(); j++)
+				if (components.size() == 0)
 				{
-					String text = files[j];
-					
-					tabMaker(text, prev, true, j);
-				}
-    		}
-    	};
-	}
-	
-	/**
-	 * create jsons on button press for blocks
-	 * @param panel
-	 * @return
-	 */
-	private ActionListener makeBlockSubmit(JPanel panel)
-	{
-		return new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String itemName = ((JTextField)panel.getComponent(nameField.value)).getText();
-				String texture = ((JTextField)panel.getComponent(textureField.value)).getText();
-				String modid = ((JTextField)panel.getComponent(modidField.value)).getText();
-				mod_id = modid;
-				pref = texture;
-				name = itemName;
-				
-				JsonPreview prev[] = { 
-						new JsonPreview(JsonType.BLOCK_ITEM, itemName, texture, modid),
-						new JsonPreview(JsonType.BLOCK_STATE, itemName, texture, modid),
-						new JsonPreview(JsonType.BLOCK, itemName, texture, modid)
-				};
-				
-				for(int i = 0; i < 3; i++)
-				{
-					String text = prev[i].getFiles()[0];
-					
-					tabMaker(text, prev[i], false, 0);
+					components.add("");
 				}
 				
+				ArrayList<JsonType> fileTypes = kind.getType();
+				JsonPreview[] prevs = new JsonPreview[fileTypes.size()];
+				for (int i = 0; i < fileTypes.size(); i++)
+				{
+					prevs[i] = new JsonPreview(fileTypes.get(i), name, pref, mod_id).add(components);
+				}
+				
+				for (int i = 0; i < prevs.length; i++)
+				{
+					String[] files = prevs[i].getFiles();
+					for(int j = 0; j < prevs[i].getOptions().size(); j++)
+					{
+						String text = files[j];
+						tabMaker(text, prevs[i], true, j);
+					}
+				}
 			}
 		};
 	}
@@ -644,6 +554,7 @@ public class Window
 				if(!inner)
 				{
 					jsons.remove(c);
+					tabMap.remove(c);
 				}
 				else
 				{
@@ -651,6 +562,7 @@ public class Window
 					if(jsons.get(c).getOptions().isEmpty())
 					{
 						jsons.remove(c);
+						tabMap.remove(c);
 					}
 				}
 				tabs.remove(scroll);
@@ -664,7 +576,7 @@ public class Window
 		JPanel panel = new JPanel();
 		
 		panel.setLayout(new GridLayout());
-		panel.setBorder(BorderFactory.createTitledBorder(local.getSpecial()));
+		panel.setBorder(BorderFactory.createTitledBorder(Lang.lang.getTitle(LangTitlesRef.JSON_BOX)));
 		fontChange(panel);
 		
 		//JTabbedPane tabs = new JTabbedPane(JTabbedPane.TOP);
@@ -678,11 +590,47 @@ public class Window
 		return panel;
 	}
 	
+	private ActionListener makeOverwriteListener(boolean newSelection)
+	{
+		return new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Save.save.updateOverwrite(newSelection);
+			}
+		};
+	}
+	
+	private ActionListener makeGenerateFoldersListener(boolean newSelection)
+	{
+		return new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Save.save.updateGenerate(newSelection);
+			}
+		};
+	}
+	
+	private void makeCheckBox(JPanel into, String text, String hoverMessage, boolean defaultTick, ActionListener listener)
+	{
+		JCheckBox box = new JCheckBox(text);
+		if (hoverMessage != null)
+		{
+			box.setToolTipText(hoverMessage);			
+		}
+    	fontChange(box);
+    	box.setFocusable(false);
+    	box.setSelected(defaultTick);
+	    
+	    box.addActionListener( listener );
+	    
+	    into.add(box);
+	}
+	
 	private JPanel makeEastRegion()
 	{
 		JPanel panel = new JPanel();
 		//save all
-		panel.setBorder(BorderFactory.createTitledBorder(local.getUIopt(6)));
+		panel.setBorder(BorderFactory.createTitledBorder(Lang.lang.getTitle(LangTitlesRef.SAVE)));
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		fontChange(panel);
 		
@@ -693,27 +641,57 @@ public class Window
 	    panel.add(sizer);
 	    
 	    //save as file
-	    JButton saveAsButton = new JButton(local.getUIopt(0));
-	    //tool tip
-	    saveAsButton.setToolTipText(local.getUIopt(1));
-    	fontChange(saveAsButton);
-    	saveAsButton.setFocusable(false);
-	    
-	    saveAsButton.addActionListener( makeSaveAsListener(panel) );
-	    
+	    makeButton(panel, Lang.lang.getUIButton(LangUIButtonsRef.SAVE_AS), Lang.lang.getUIButton(LangUIButtonsRef.SAVE_AS_HOVER), makeSaveAsListener(panel));
 	    //save file
-	    JButton saveButton = new JButton(local.getUIopt(2));
-	    //tool tip
-	    saveButton.setToolTipText(local.getUIopt(3));
-	    fontChange(saveButton);
-	    saveButton.setFocusable(false);
+	    makeButton(panel, Lang.lang.getUIButton(LangUIButtonsRef.SAVE), Lang.lang.getUIButton(LangUIButtonsRef.SAVE_HOVER), makeSaveListener(panel));
 	    
-	    saveButton.addActionListener( makeSaveListener(panel) );
-	    
-	    panel.add(saveAsButton);
-	    panel.add(saveButton);
+	    makeCheckBox(panel, Lang.lang.getUIButton(LangUIButtonsRef.OVERWRITE), Lang.lang.getUIButton(LangUIButtonsRef.OVERWRITE_HOVER), Save.save.Overwrite(), makeOverwriteListener(!Save.save.Overwrite()));
+	    makeCheckBox(panel, Lang.lang.getUIButton(LangUIButtonsRef.GENERATE_FOLD), Lang.lang.getUIButton(LangUIButtonsRef.GENERATE_FOLD_HOVER), Save.save.GenerateFolders(), makeGenerateFoldersListener(!Save.save.GenerateFolders()));
 	    contentPane.add(panel, BorderLayout.EAST);
 	    return panel;
+	}
+	
+	private int saveJson(String directory, JsonPreview json, int j)
+	{
+		String fileName = json.getFileName(j);
+		File file = new File(directory + "\\" + fileName);
+		FileHandler.createFile(file);
+		if (FileHandler.writeFileExists(file, json.getFiles()[j]))
+		{
+			return 0;
+		}
+		else
+		{
+			return 1;
+		}
+	}
+	
+	private int[] saveJsons()
+	{
+		int[] flags = new int[2];
+		flags[0] = 0;
+		flags[1] = 0;
+		for(Entry<Component, JsonPreview> en : jsons.entrySet())
+		{
+			for(int j = 0; j < en.getValue().getOptions().size(); j++)
+			{
+				String tmp;
+				//The second condition of the ORs are only relevant if the first condition is false
+				if ((Save.save.GenerateFolders() || FileHandler.doesFileSystemItemExist(path, en.getValue().getType().folder))
+						&& (Save.save.Overwrite() || !FileHandler.doesFileSystemItemExist(path + "\\" + en.getValue().getType().folder, en.getValue().getFileName(j))))
+				{
+					tmp = FileHandler.directoryExists(path, en.getValue().getType().folder);
+					flags[saveJson(tmp, en.getValue(), j)]++;
+					tabs.remove(tabMap.remove(en.getKey()));
+				}
+				else
+				{
+					flags[1]++;
+					failedSaves.put(en.getKey(), en.getValue());
+				}
+			}
+		}
+		return flags;
 	}
 	
 	private ActionListener makeSaveAsListener(JPanel panel)
@@ -722,6 +700,7 @@ public class Window
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				String messageFollows = "";
 				if(jsons.size() == 0)
 				{
 					return;
@@ -729,7 +708,7 @@ public class Window
 				JFileChooser save = new JFileChooser();
 				save.setCurrentDirectory(new java.io.File(path));
 				//save
-				save.setDialogTitle(local.getUIopt(4));
+				save.setDialogTitle(Lang.lang.getTitle(LangTitlesRef.SAVE_DIALOG));
 				save.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				save.setAcceptAllFileFilterUsed(false);
 				
@@ -746,82 +725,24 @@ public class Window
 				if(localPath != null)
 				{
 					path = localPath;
-					//for (int i = 0; i < jsons.size(); i++)
-					for(Entry<Component, JsonPreview> en : jsons.entrySet())
-					{
-						for(int j = 0; j < en.getValue().getOptions().size(); j++)
-						{
-							String tmp;
-							if(en.getValue().getType() == JsonType.BASIC)
-							{
-								tmp = directoryExists(localPath, Reference.ITEM_FOLD);
-							}
-							else if(en.getValue().getType() == JsonType.TOOL_SET)
-							{
-								tmp = directoryExists(localPath, Reference.ITEM_FOLD);
-							}
-							else if(en.getValue().getType() == JsonType.ARMOR_SET)
-							{
-								tmp = directoryExists(localPath, Reference.ITEM_FOLD);
-							}
-							else if(en.getValue().getType() == JsonType.BLOCK_ITEM)
-							{
-								tmp = directoryExists(localPath, Reference.ITEM_FOLD);
-							}
-							else if(en.getValue().getType() == JsonType.BLOCK_STATE)
-							{
-								tmp = directoryExists(localPath, Reference.B_STATE_FOLD);
-							}
-							else//BLOCK
-							{
-								tmp = directoryExists(localPath, Reference.BLCK_FOLD);
-							}
-							
-							File file = new File(tmp);
-							try {
-								FileWriter fw = new FileWriter(file.getAbsoluteFile() + "\\" + en.getValue().getName() + en.getValue().getOptions().get(j) + ".json");
-								BufferedWriter bw = new BufferedWriter(fw);
-								bw.write(en.getValue().getFiles()[j]);
-								bw.close();
-							}
-							catch(IOException err)
-							{
-								err.printStackTrace();
-								System.exit(-1);
-							}
-						}
-					}
+					int[] tmp = saveJsons();
+					messageFollows = (tmp[0] > 0 ? (tmp[0] + " " + Lang.lang.getMessage(LangMessageRef.SAVED)) : "")
+							+ (tmp[0] > 0 && tmp[1] > 0 ? " " : "")
+							+ (tmp[1] > 0 ? (tmp[1] + " " + Lang.lang.getMessage(LangMessageRef.FAILED)) : "");
 					//File file = new File(this.getClass().getClassLoader().getResource(Reference.DATA_FILE).getFile().replace("%20", " "));
-					File file = new File(Reference.DATA_FILE);
-					try {
-						Scanner scan = new Scanner(file);
-						scan.next();
-						String contents = "";
-						while(scan.hasNext())
-						{
-							contents = "\n" + contents + scan.next();
-						}
-						scan.close();
-						FileWriter fw = new FileWriter(file.getAbsoluteFile());
-						BufferedWriter bw = new BufferedWriter(fw);
-						bw.write(path);
-						bw.write(contents);
-						bw.close();
-					}
-					catch(IOException err)
+					if (!Save.save.updatePath(path))
 					{
-						err.printStackTrace();
-						//failed
-						refreshContent(local.getMsgs(0));
+						refreshContent(messageFollows);
 						return;
-						//System.exit(-1);
 					}
 				}
-				tabs = new JTabbedPane(JTabbedPane.TOP);
-				jsons = new HashMap<>();
+				//tabs = new JTabbedPane(JTabbedPane.TOP);
+				jsons.clear();
+				jsons.putAll(failedSaves);
+				failedSaves.clear();
 				currentIndex = -1;
 				//saved
-				refreshContent(local.getMsgs(1));
+				refreshContent(messageFollows);
 			}
 			
 		};
@@ -838,54 +759,28 @@ public class Window
 				{
 					return;
 				}
-				//for (int i = 0; i < jsons.size(); i++)
-				for(Entry<Component, JsonPreview> en : jsons.entrySet())
-				{
-					for(int j = 0; j < en.getValue().getOptions().size(); j++)
-					{
-						String tmp;
-						tmp = directoryExists(path, en.getValue().getType().folder);
-						
-						
-						File file = new File(tmp);
-						try {
-							FileWriter fw = new FileWriter(file.getAbsoluteFile() + "\\" + en.getValue().getName() + en.getValue().getOptions().get(j) + ".json");
-							BufferedWriter bw = new BufferedWriter(fw);
-							bw.write(en.getValue().getFiles()[j]);
-							bw.close();
-						}
-						catch(IOException err)
-						{
-							err.printStackTrace();
-							//failed
-							refreshContent(local.getMsgs(0));
-							return;
-							//System.exit(-1);
-						}
-					}
-				}
-				tabs = new JTabbedPane(JTabbedPane.TOP);
-				jsons = new HashMap<>();
+				
+				int[] tmp = saveJsons();
+				String messageFollows = (tmp[0] > 0 ? (tmp[0] + " " + Lang.lang.getMessage(LangMessageRef.SAVED)) : "")
+						+ (tmp[0] > 0 && tmp[1] > 0 ? " " : "")
+						+ (tmp[1] > 0 ? (tmp[1] + " " + Lang.lang.getMessage(LangMessageRef.FAILED)) : "");
+				//tabs = new JTabbedPane(JTabbedPane.TOP);
+				jsons.clear();
+				jsons.putAll(failedSaves);
+				failedSaves.clear();
 				currentIndex = -1;
 				//saved
-				refreshContent(local.getMsgs(1));
+				refreshContent(messageFollows);
 			}
 			
 		};
-	}
-	
-	private String directoryExists(String path, String directory)
-	{
-		File dir = new File(path + "\\" + directory);
-		dir.mkdirs();	
-		return path + "\\" + directory;
 	}
 	
 	private JPanel makeSouthRegion()
 	{
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-		panel.setBorder(BorderFactory.createTitledBorder(local.getMessage()));
+		panel.setBorder(BorderFactory.createTitledBorder(Lang.lang.getTitle(LangTitlesRef.MESSAGE_BOX)));
 		fontChange(panel);
 		
 		JTextPane label = new JTextPane();
@@ -894,7 +789,7 @@ public class Window
 		fontChange(label);
 		
 		//set the read only text "save to: "
-		label.setText(local.getMsgs(2) + path + "\n" + message);
+		label.setText(Lang.lang.getMessage(LangMessageRef.SAVES_TO) + path + "\n" + message);
 		
 		panel.add(label);
 		contentPane.add(panel, BorderLayout.SOUTH);
@@ -920,6 +815,11 @@ public class Window
 	private void fontChange(JButton button)
 	{
 		button.setFont(new Font("courier", Font.BOLD, res.getFontSize()));
+	}
+	
+	private void fontChange(JCheckBox box)
+	{
+		box.setFont(new Font("courier", Font.BOLD, res.getFontSize()));
 	}
 	
 	private void fontChange(JTextPane label)

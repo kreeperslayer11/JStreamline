@@ -8,7 +8,7 @@ import templates.json.models.BasicItem;
 import templates.json.models.BlockBlock;
 import templates.json.models.BlockItem;
 import templates.json.models.Tool;
-import util.JsonType;
+import util.json.generator.JsonType;
 
 public class JsonPreview 
 {
@@ -21,22 +21,12 @@ public class JsonPreview
 	/**
 	 * 
 	 * @param type kind of json file this is
-	 */
-	JsonPreview(JsonType type)
-	{
-		this.options.add("");
-		this.type = type;
-	}
-	
-	/**
-	 * 
-	 * @param type kind of json file this is
 	 * @param name name of the file without .json
 	 * @param texture the name of the texture refered to in the file
 	 * @param modid mod id of the mod this is being generated for
 	 * @param spacesPerIndent
 	 */
-	JsonPreview(JsonType type, String name, String texture, String modid)
+	public JsonPreview(JsonType type, String name, String texture, String modid)
 	{
 		this.options.add("");
 		this.type = type;
@@ -145,6 +135,16 @@ public class JsonPreview
 	public String getName()
 	{
 		return name;
+	}
+	
+	public String getFileName(String option)
+	{
+		return name + option + ".json";
+	}
+	
+	public String getFileName(int optionIndex)
+	{
+		return getFileName(options.get(optionIndex));
 	}
 	
 	public ArrayList<String> getOptions()

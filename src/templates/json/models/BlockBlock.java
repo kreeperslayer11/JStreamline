@@ -1,7 +1,7 @@
 package templates.json.models;
 
 import templates.inner.BlockTextures;
-import util.JsonType;
+import util.json.generator.JsonType;
 
 public class BlockBlock extends Model
 {
