@@ -14,6 +14,7 @@ import javax.swing.*;
 import templates.json.savedata.lang.Lang;
 import templates.json.savedata.settings.Save;
 import util.FileHandler;
+import util.Language;
 import util.RefInt;
 import util.ResVals;
 import util.Resolution;
@@ -36,6 +37,8 @@ public class Window
 	private JPanel south, east, west, center;
 	//private ArrayList<JsonPreview> jsons;
 	private Map<Component, JsonPreview> jsons;
+	private Map<Component, JScrollPane> tabMap;
+	private Map<Component, JsonPreview> failedSaves;
 	private JTabbedPane tabs;
 	private int currentIndex = -1;
 	private String path, message, mod_id, pref, name;
@@ -76,6 +79,8 @@ public class Window
 		frame.setResizable(false);
 		//contentPane.setPreferredSize(new Dimension(res.getWidth(), res.getHeight()));
 		this.jsons = new HashMap<>();
+		this.tabMap = new HashMap<>();
+		this.failedSaves = new HashMap<>();
 		tabs = new JTabbedPane(JTabbedPane.TOP);
 	}
 	
@@ -143,12 +148,13 @@ public class Window
     		}
     		makeMenuOption(sub, Lang.lang.getRes(resKey), makeResolutionListener(i));
     	}
-    	//for (int i = 0; i < local.getResLength(); i++)
-    	//{
-    	//	makeMenuOption(sub, local.getRes(i), makeResolutionListener(i));//individual resolution
-    	//}
     	
-    	makeMenuOption(pre, Lang.lang.getMenu(LangMenuRef.LANGUAGE), null);//language
+    	sub = makeMenu(pre, Lang.lang.getMenu(LangMenuRef.LANGUAGE));//language
+    	String[] langs = Language.lang.getLangs();
+    	for (int i = 0; i < langs.length; i++)
+    	{
+    		makeMenuOption(sub, langs[i], makeLangListener(langs[i]));
+    	}
     	
     	//TODO: exit listener
     	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.EXIT), null);//exit
@@ -173,6 +179,16 @@ public class Window
     			refreshContent("");
     		}
     	};
+	}
+	
+	private ActionListener makeLangListener(String lang) {
+		return new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Save.save.updateLang(lang);
+				Lang.rebindToSave();
+				refreshContent("");
+			}
+		};
 	}
 	
 	private ActionListener makeTypeListener(JsonFlag num)
@@ -296,20 +312,41 @@ public class Window
 		fontChange(label);
 		label.setText(text);
 		label.setMaximumSize(new Dimension(res.getWidth() / 2, res.getFontSize() * 2));
+		label.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+            	label.select(0, label.getText().length());
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                label.select(0, 0);
+            }
+        });
 		panel.add(label);
 		fieldId.value = panel.getComponentCount() - 1;
 	}
 	
+	private JButton makeButton(JPanel into, String text, String hoverMessage, ActionListener listener)
+	{
+		JButton button = new JButton(text);
+	    //tool tip
+		if (hoverMessage != null)
+		{
+			button.setToolTipText(hoverMessage);			
+		}
+    	fontChange(button);
+    	button.setFocusable(false);
+	    
+	    button.addActionListener( listener );
+	    
+	    into.add(button);
+	    return button;
+	}
+	
 	private void submitButton(JPanel panel)
 	{
-		//submit
-	    JButton jbutton = new JButton(Lang.lang.getUIButton(LangUIButtonsRef.SUBMIT));
-    	fontChange(jbutton);
-    	jbutton.setFocusable(false);
-	    
-	    jbutton.addActionListener( makeFilesAfterSubmit(panel, flag) );
-	    
-	    panel.add(jbutton);
+		makeButton(panel, Lang.lang.getUIButton(LangUIButtonsRef.SUBMIT), null, makeFilesAfterSubmit(panel, flag)).setFocusable(true);
 	}
 	
 	private JPanel makeWestRegion()
@@ -461,6 +498,7 @@ public class Window
 		tabPanel.add(buttonClose, gbc);
 		tabs.setTabComponentAt(index, tabPanel);
 		jsons.put(tabPanel, prev);
+		tabMap.put(tabPanel, scroll);
 		buttonClose.addActionListener(makeCloseTabListener(tabPanel, scroll, inner, inner ? prev.getOptions().get(j) : ""));
 	}
 	
@@ -516,6 +554,7 @@ public class Window
 				if(!inner)
 				{
 					jsons.remove(c);
+					tabMap.remove(c);
 				}
 				else
 				{
@@ -523,6 +562,7 @@ public class Window
 					if(jsons.get(c).getOptions().isEmpty())
 					{
 						jsons.remove(c);
+						tabMap.remove(c);
 					}
 				}
 				tabs.remove(scroll);
@@ -550,6 +590,42 @@ public class Window
 		return panel;
 	}
 	
+	private ActionListener makeOverwriteListener(boolean newSelection)
+	{
+		return new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Save.save.updateOverwrite(newSelection);
+			}
+		};
+	}
+	
+	private ActionListener makeGenerateFoldersListener(boolean newSelection)
+	{
+		return new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Save.save.updateGenerate(newSelection);
+			}
+		};
+	}
+	
+	private void makeCheckBox(JPanel into, String text, String hoverMessage, boolean defaultTick, ActionListener listener)
+	{
+		JCheckBox box = new JCheckBox(text);
+		if (hoverMessage != null)
+		{
+			box.setToolTipText(hoverMessage);			
+		}
+    	fontChange(box);
+    	box.setFocusable(false);
+    	box.setSelected(defaultTick);
+	    
+	    box.addActionListener( listener );
+	    
+	    into.add(box);
+	}
+	
 	private JPanel makeEastRegion()
 	{
 		JPanel panel = new JPanel();
@@ -565,35 +641,22 @@ public class Window
 	    panel.add(sizer);
 	    
 	    //save as file
-	    JButton saveAsButton = new JButton(Lang.lang.getUIButton(LangUIButtonsRef.SAVE_AS));
-	    //tool tip
-	    saveAsButton.setToolTipText(Lang.lang.getUIButton(LangUIButtonsRef.SAVE_AS_HOVER));
-    	fontChange(saveAsButton);
-    	saveAsButton.setFocusable(false);
-	    
-	    saveAsButton.addActionListener( makeSaveAsListener(panel) );
-	    
+	    makeButton(panel, Lang.lang.getUIButton(LangUIButtonsRef.SAVE_AS), Lang.lang.getUIButton(LangUIButtonsRef.SAVE_AS_HOVER), makeSaveAsListener(panel));
 	    //save file
-	    JButton saveButton = new JButton(Lang.lang.getUIButton(LangUIButtonsRef.SAVE));
-	    //tool tip
-	    saveButton.setToolTipText(Lang.lang.getUIButton(LangUIButtonsRef.SAVE_HOVER));
-	    fontChange(saveButton);
-	    saveButton.setFocusable(false);
+	    makeButton(panel, Lang.lang.getUIButton(LangUIButtonsRef.SAVE), Lang.lang.getUIButton(LangUIButtonsRef.SAVE_HOVER), makeSaveListener(panel));
 	    
-	    saveButton.addActionListener( makeSaveListener(panel) );
-	    
-	    panel.add(saveAsButton);
-	    panel.add(saveButton);
+	    makeCheckBox(panel, Lang.lang.getUIButton(LangUIButtonsRef.OVERWRITE), Lang.lang.getUIButton(LangUIButtonsRef.OVERWRITE_HOVER), Save.save.Overwrite(), makeOverwriteListener(!Save.save.Overwrite()));
+	    makeCheckBox(panel, Lang.lang.getUIButton(LangUIButtonsRef.GENERATE_FOLD), Lang.lang.getUIButton(LangUIButtonsRef.GENERATE_FOLD_HOVER), Save.save.GenerateFolders(), makeGenerateFoldersListener(!Save.save.GenerateFolders()));
 	    contentPane.add(panel, BorderLayout.EAST);
 	    return panel;
 	}
 	
-	private int saveJson(String directory, Entry<Component, JsonPreview> json, int j)
+	private int saveJson(String directory, JsonPreview json, int j)
 	{
-		String fileName = json.getValue().getName() + json.getValue().getOptions().get(j) + ".json";
+		String fileName = json.getFileName(j);
 		File file = new File(directory + "\\" + fileName);
 		FileHandler.createFile(file);
-		if (FileHandler.writeFileExists(file, json.getValue().getFiles()[j]))
+		if (FileHandler.writeFileExists(file, json.getFiles()[j]))
 		{
 			return 0;
 		}
@@ -603,7 +666,6 @@ public class Window
 		}
 	}
 	
-	//TODO: save failed saves into a passed in hash map. then when the has map is reset later, set it to that instead so unsaved jsons aren't deleted
 	private int[] saveJsons()
 	{
 		int[] flags = new int[2];
@@ -614,8 +676,19 @@ public class Window
 			for(int j = 0; j < en.getValue().getOptions().size(); j++)
 			{
 				String tmp;
-				tmp = directoryExists(path, en.getValue().getType().folder);
-				flags[saveJson(tmp, en, j)]++;
+				//The second condition of the ORs are only relevant if the first condition is false
+				if ((Save.save.GenerateFolders() || FileHandler.doesFileSystemItemExist(path, en.getValue().getType().folder))
+						&& (Save.save.Overwrite() || !FileHandler.doesFileSystemItemExist(path + "\\" + en.getValue().getType().folder, en.getValue().getFileName(j))))
+				{
+					tmp = FileHandler.directoryExists(path, en.getValue().getType().folder);
+					flags[saveJson(tmp, en.getValue(), j)]++;
+					tabs.remove(tabMap.remove(en.getKey()));
+				}
+				else
+				{
+					flags[1]++;
+					failedSaves.put(en.getKey(), en.getValue());
+				}
 			}
 		}
 		return flags;
@@ -663,8 +736,10 @@ public class Window
 						return;
 					}
 				}
-				tabs = new JTabbedPane(JTabbedPane.TOP);
-				jsons = new HashMap<>();
+				//tabs = new JTabbedPane(JTabbedPane.TOP);
+				jsons.clear();
+				jsons.putAll(failedSaves);
+				failedSaves.clear();
 				currentIndex = -1;
 				//saved
 				refreshContent(messageFollows);
@@ -689,21 +764,16 @@ public class Window
 				String messageFollows = (tmp[0] > 0 ? (tmp[0] + " " + Lang.lang.getMessage(LangMessageRef.SAVED)) : "")
 						+ (tmp[0] > 0 && tmp[1] > 0 ? " " : "")
 						+ (tmp[1] > 0 ? (tmp[1] + " " + Lang.lang.getMessage(LangMessageRef.FAILED)) : "");
-				tabs = new JTabbedPane(JTabbedPane.TOP);
-				jsons = new HashMap<>();
+				//tabs = new JTabbedPane(JTabbedPane.TOP);
+				jsons.clear();
+				jsons.putAll(failedSaves);
+				failedSaves.clear();
 				currentIndex = -1;
 				//saved
 				refreshContent(messageFollows);
 			}
 			
 		};
-	}
-	
-	private String directoryExists(String path, String directory)
-	{
-		File dir = new File(path + "\\" + directory);
-		dir.mkdirs();	
-		return path + "\\" + directory;
 	}
 	
 	private JPanel makeSouthRegion()
@@ -745,6 +815,11 @@ public class Window
 	private void fontChange(JButton button)
 	{
 		button.setFont(new Font("courier", Font.BOLD, res.getFontSize()));
+	}
+	
+	private void fontChange(JCheckBox box)
+	{
+		box.setFont(new Font("courier", Font.BOLD, res.getFontSize()));
 	}
 	
 	private void fontChange(JTextPane label)

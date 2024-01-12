@@ -1,71 +1,74 @@
 {
     "Titles": {
-      "App Title": "JStreamline",
-      "Input Section": "Selections",
-      "Json Output Section": "Jsons",
-      "Message Area": "Message",
-      "Save Buttons Section": "Save All",
-      "Save Dialog": "Save",
-      "IDK Man, I just wrote this": "add to operation"
+        "App Title": "JStreamline",
+        "Input Section": "Selections",
+        "Json Output Section": "Jsons",
+        "Message Area": "Message",
+        "Save Buttons Section": "Save All",
+        "Save Dialog": "Save"
     },
     "Menus": {
-      "File": "File",
-      "Reset UI Scale": "Reset",
-      "Options": "Options",
-      "Language": "Language",
-      "Exit": "Exit",
-      "Resolution": "Resolution",
-      "Json Types": "Types",
-      "Basic Item Json Type": "Basic Item",
-      "Tool Set Json Type": "Tool Set",
-      "Armor Set Json Type": "Armor Set",
-      "Block Json Type": "Blocks"
+        "File": "File",
+        "Reset UI Scale": "Reset",
+        "Options": "Options",
+        "Language": "Language",
+        "Exit": "Exit",
+        "Resolution": "Resolution",
+        "Json Types": "Types",
+        "Basic Item Json Type": "Basic Item",
+        "Tool Set Json Type": "Tool Set",
+        "Armor Set Json Type": "Armor Set",
+        "Block Json Type": "Blocks"
     },
     "Resolutions": {
-      "Default Resolution": "Default"
+        "Default Resolution": "Default"
     },
     "Messages": {
-      "Save Fail Message": "FAILED.",
-      "Save Success Message": "saved.",
-      "Jsons Save To": "save to: "
+        "Save Fail Message": "FAILED.",
+        "Save Success Message": "saved.",
+        "Jsons Save To": "save to: "
     },
     "UILabels": {
-      "Json Name": "Item Name",
-      "Json Name for Sets": "Set Name",
-      "Json Name for Blocks": "BlockName",
-      "Texture Name": "Texture Name",
-      "Texture Name for Jsons with Postfixes": "Texture Prefix",
-      "Mod_ID": "Mod_ID",
-      "Postfix Section Label": "PostFixes",
-      "Sword Postfix": "Sword",
-      "Axe Postfix": "Axe",
-      "Shovel Postfix": "Shovel",
-      "Pickaxe Postfix": "Pickaxe",
-      "Hoe Postfix": "Hoe",
-      "Helmet Postfix": "Helmet",
-      "Chestplate Postfix": "Chestplate",
-      "Leggings Postfix": "Leggings",
-      "Boots Postfix": "Boots"
+        "Json Name": "Item Name",
+        "Json Name for Sets": "Set Name",
+        "Json Name for Blocks": "BlockName",
+        "Texture Name": "Texture Name",
+        "Texture Name for Jsons with Postfixes": "Texture Prefix",
+        "Mod_ID": "Mod_ID",
+        "Postfix Section Label": "PostFixes",
+        "Sword Postfix": "Sword",
+        "Axe Postfix": "Axe",
+        "Shovel Postfix": "Shovel",
+        "Pickaxe Postfix": "Pickaxe",
+        "Hoe Postfix": "Hoe",
+        "Helmet Postfix": "Helmet",
+        "Chestplate Postfix": "Chestplate",
+        "Leggings Postfix": "Leggings",
+        "Boots Postfix": "Boots"
     },
     "UIButtons": {
-      "Save": "Save File",
-      "Save As": "Save As File",
-      "Generate Jsons": "Generate",
-      "Message when hover over Save Button": "Saves all at last save location in proper folders",
-      "Message when hover over Save As Button": "Select the MOD_ID folder of your mod in your assets folder. Files will be saved in their proper folders"
+        "Save": "Save File",
+        "Save As": "Save As File",
+        "Generate Jsons": "Generate",
+        "Message when hover over Save Button": "Saves all at last save location in proper folders",
+        "Message when hover over Save As Button": "Select the MOD_ID folder of your mod in your assets folder. Files will be saved in their proper folders",
+        "Overwrite Checkbox": "Overwrite",
+        "Generate Folders Checkbox": "Generate Folders",
+        "Message when hover over Overwrite Checkbox": "Overwrite existing jsons with the same name",
+        "Message when hover over Generate Checkbox": "Generate folder structure if it is not there"
     },
     "DefaultValues": {
-      "Json Name": "name",
-      "Texture Name": "texturename",
-      "Mod_ID": "Mod_ID",
-      "Sword Postfix": "sword",
-      "Axe Postfix": "axe",
-      "Shovel Postfix": "shovel",
-      "Pickaxe Postfix": "pickaxe",
-      "Hoe Postfix": "hoe",
-      "Helmet Postfix": "helmet",
-      "Chestplate Postfix": "chestplate",
-      "Leggings Postfix": "leggings",
-      "Boots Postfix": "boots"
+        "Json Name": "name",
+        "Texture Name": "texturename",
+        "Mod_ID": "Mod_ID",
+        "Sword Postfix": "sword",
+        "Axe Postfix": "axe",
+        "Shovel Postfix": "shovel",
+        "Pickaxe Postfix": "pickaxe",
+        "Hoe Postfix": "hoe",
+        "Helmet Postfix": "helmet",
+        "Chestplate Postfix": "chestplate",
+        "Leggings Postfix": "leggings",
+        "Boots Postfix": "boots"
     }
-  }
+}

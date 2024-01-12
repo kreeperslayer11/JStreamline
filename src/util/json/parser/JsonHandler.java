@@ -21,6 +21,15 @@ public class JsonHandler
 		return "";
 	}
 	
+	public static boolean readBoolFromElement(JsonElement e)
+	{
+		if (e != null)
+		{
+			return e.getAsBoolean();
+		}
+		return false;
+	}
+	
 	public static void readFromElement(JsonElement e, Map<String, String> map)
 	{
 		if (e != null)

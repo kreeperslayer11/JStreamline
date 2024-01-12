@@ -1,5 +1,6 @@
 /bin/
 /resources/data.json
+/resources/lang/lang_testLang.json
 /libs
 # eclipse
 bin

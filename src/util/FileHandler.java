@@ -42,6 +42,21 @@ public class FileHandler
 		return directory;
 	}
 	
+	public static String[] filesInDirectory(File dir)
+	{
+		if (doesFileSystemItemExist(dir))
+		{
+			File[] files = dir.listFiles();
+			String[] names = new String[files.length];
+			for (int i = 0; i < files.length; i++)
+			{
+				names[i] = files[i].getName();
+			}
+			return names;
+		}
+		return new String[0];
+	}
+	
 	public static void createFile(File file)
 	{
 		if (!FileHandler.doesFileSystemItemExist(file))

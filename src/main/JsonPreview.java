@@ -137,6 +137,16 @@ public class JsonPreview
 		return name;
 	}
 	
+	public String getFileName(String option)
+	{
+		return name + option + ".json";
+	}
+	
+	public String getFileName(int optionIndex)
+	{
+		return getFileName(options.get(optionIndex));
+	}
+	
 	public ArrayList<String> getOptions()
 	{
 		return options;

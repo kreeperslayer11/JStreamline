@@ -11,6 +11,9 @@ public class Save extends AbstractJsonResource
 {
 	String ExportPath;
 	String Resolution;
+	String Language;
+	boolean Overwrite;
+	boolean GenerateFolders;
 	
 	public static Save save = new Save();
 	
@@ -26,6 +29,9 @@ public class Save extends AbstractJsonResource
 		
 		ExportPath = JsonHandler.readFromElement(data.get("ExportPath"));
 		Resolution = JsonHandler.readFromElement(data.get("Resolution"));
+		Language = JsonHandler.readFromElement(data.get("Language"));
+		Overwrite = JsonHandler.readBoolFromElement(data.get("Overwrite"));
+		GenerateFolders = JsonHandler.readBoolFromElement(data.get("GenerateFolders"));
 	}
 	
 	public boolean updatePath(String newPath)
@@ -40,6 +46,24 @@ public class Save extends AbstractJsonResource
 		return write();
 	}
 	
+	public boolean updateLang(String newLang)
+	{
+		this.Language = newLang;
+		return write();
+	}
+	
+	public boolean updateOverwrite(boolean newSetting)
+	{
+		this.Overwrite = newSetting;
+		return write();
+	}
+	
+	public boolean updateGenerate(boolean newSetting)
+	{
+		this.GenerateFolders = newSetting;
+		return write();
+	}
+	
 	public String ExportPath()
 	{
 		return ExportPath;
@@ -48,5 +72,20 @@ public class Save extends AbstractJsonResource
 	public String Resolution()
 	{
 		return Resolution;
+	}
+	
+	public String Language()
+	{
+		return Language;
+	}
+	
+	public boolean Overwrite()
+	{
+		return Overwrite;
+	}
+	
+	public boolean GenerateFolders()
+	{
+		return GenerateFolders;
 	}
 }

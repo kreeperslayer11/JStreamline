@@ -6,6 +6,7 @@ import java.util.Map;
 import com.google.gson.JsonObject;
 
 import templates.json.JsonSerializable;
+import templates.json.savedata.settings.Save;
 import util.FileHandler;
 import util.Reference;
 import util.ResVals;
@@ -23,6 +24,11 @@ public class Lang extends JsonSerializable
 	Map<String, String> UIButtons = new HashMap<>();
 	Map<String, String> DefaultValues = new HashMap<>();
 	
+	public static void rebindToSave()
+	{
+		lang = new Lang();
+	}
+	
 	private Lang()
 	{
 		load();
@@ -30,7 +36,7 @@ public class Lang extends JsonSerializable
 	
 	private void load()
 	{
-		JsonObject data = FileHandler.readInResource(Reference.LANG_FILE);
+		JsonObject data = FileHandler.readInResource(Reference.LANG_FILE(Save.save.Language()));
 		
 		JsonHandler.readFromElement(data.get("Titles"), Titles);
 		JsonHandler.readFromElement(data.get("Menus"), Menus);
