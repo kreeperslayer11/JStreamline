@@ -14,8 +14,10 @@ import javax.swing.*;
 import templates.json.savedata.lang.Lang;
 import templates.json.savedata.settings.Save;
 import util.FileHandler;
+import util.InnerPreview;
 import util.Language;
 import util.RefInt;
+import util.RefString;
 import util.ResVals;
 import util.Resolution;
 import util.json.generator.JsonFlag;
@@ -36,17 +38,19 @@ public class Window
 	private Resolution res;
 	private JPanel south, east, west, center;
 	//private ArrayList<JsonPreview> jsons;
-	private Map<Component, JsonPreview> jsons;
+	private Map<Component, InnerPreview> jsons;
 	private Map<Component, JScrollPane> tabMap;
-	private Map<Component, JsonPreview> failedSaves;
+	private Map<Component, InnerPreview> failedSaves;
 	private JTabbedPane tabs;
 	private int currentIndex = -1;
-	private String path, message, mod_id, pref, name;
+	private RefString path, message, mod_id, pref, side, paneside, top, bottom, name;
 	
 	private RefInt nameField = new RefInt(), textureField  = new RefInt(), modidField  = new RefInt(), 
 			swordField = new RefInt(), axeField = new RefInt(), shovelField = new RefInt(), 
 			pickaxeField = new RefInt(), hoeField = new RefInt(), helmetField = new RefInt(), 
-			chestplateField = new RefInt(), leggingsField = new RefInt(), bootsField = new RefInt();
+			chestplateField = new RefInt(), leggingsField = new RefInt(), bootsField = new RefInt(),
+			topField = new RefInt(), bottomField = new RefInt(), sideField = new RefInt(),
+			northSouthField = new RefInt(), eastWestField = new RefInt();
 	private ArrayList<Integer> componentList = new ArrayList<>();
 	
 	public Window(JFrame frame, JPanel contentPane, Resolution res, String path, String reso)
@@ -55,11 +59,15 @@ public class Window
 		this.frame = frame;
 		this.contentPane = contentPane;
 		this.res = res;
-		this.path = path;
-		this.message = "";
-		this.mod_id = Lang.lang.getDefaultText(LangDefaultValueRef.MOD_ID);
-		this.pref = Lang.lang.getDefaultText(LangDefaultValueRef.TEXTURE);
-		this.name = Lang.lang.getDefaultText(LangDefaultValueRef.NAME);
+		this.path = new RefString(path);
+		this.message = new RefString("");
+		this.mod_id = new RefString(Lang.lang.getDefaultText(LangDefaultValueRef.MOD_ID));
+		this.pref = new RefString(Lang.lang.getDefaultText(LangDefaultValueRef.TEXTURE));
+		this.top = new RefString(Lang.lang.getDefaultText(LangDefaultValueRef.TEXTURE));
+		this.bottom = new RefString(Lang.lang.getDefaultText(LangDefaultValueRef.TEXTURE));
+		this.side = new RefString(Lang.lang.getDefaultText(LangDefaultValueRef.TEXTURE));
+		this.paneside = new RefString(Lang.lang.getDefaultText(LangDefaultValueRef.PANE_SIDE));
+		this.name = new RefString(Lang.lang.getDefaultText(LangDefaultValueRef.NAME));
 		
 		contentPane.setLayout(new BorderLayout(res.getBorder(), res.getBorder()));
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -156,8 +164,7 @@ public class Window
     		makeMenuOption(sub, langs[i], makeLangListener(langs[i]));
     	}
     	
-    	//TODO: exit listener
-    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.EXIT), null);//exit
+    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.EXIT), makeExitListener());//exit
     	//END FILE==============================================================
     	//TYPES=================================================================
     	menu = makeMenu(menuBar, Lang.lang.getMenu(LangMenuRef.TYPES), KeyEvent.VK_T);
@@ -166,6 +173,10 @@ public class Window
     	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.TOOL_SET), makeTypeListener(JsonFlag.Tool));
     	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.ARMOR_SET), makeTypeListener(JsonFlag.Armor));
     	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.BLOCKS), makeTypeListener(JsonFlag.Block));
+    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.FLAME), makeTypeListener(JsonFlag.Flame));
+    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.PORTAL), makeTypeListener(JsonFlag.Portal));
+    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.PANE), makeTypeListener(JsonFlag.Pane));
+    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.STAIRS), makeTypeListener(JsonFlag.Stairs));
 	}
 	
 	private ActionListener makeResolutionListener(int num)
@@ -217,6 +228,16 @@ public class Window
 		};
 	}
 	
+	private ActionListener makeExitListener()
+	{
+		//TODO: maybe add some other things to this
+		return new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.exit(0);
+			}
+		};
+	}
+	
 	public void killContent()
 	{
 		currentIndex = tabs.getSelectedIndex();
@@ -225,7 +246,7 @@ public class Window
 	
 	public void makeContent(String message)
 	{ 	
-		this.message = message;
+		this.message.value = message;
 		makeNorthRegion();
     	west = makeWestRegion();
     	center = makeCenterRegion();
@@ -304,14 +325,26 @@ public class Window
 	
 	private void MakeTextBox(JPanel panel, String title, String text, RefInt fieldId)
 	{
+		MakeTextBox(panel, title, new RefString(text), false, fieldId);
+	}
+	
+	private void MakeTextBox(JPanel panel, String title, RefString text, RefInt fieldId)
+	{
+		MakeTextBox(panel, title, text, true, fieldId);
+	}
+	
+	private void MakeTextBox(JPanel panel, String title, RefString text, boolean useRef, RefInt fieldId)
+	{
 		JLabel ider = new JLabel(title);
 		//ider.setBorder(BorderFactory.createEmptyBorder(0, res.getBorder() + 2, 0, 0));
 		panel.add(ider);
 		
 		JTextField label = new JTextField();
 		fontChange(label);
-		label.setText(text);
+		label.setText(text.value);
 		label.setMaximumSize(new Dimension(res.getWidth() / 2, res.getFontSize() * 2));
+		panel.add(label);
+		fieldId.value = panel.getComponentCount() - 1;
 		label.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -321,10 +354,12 @@ public class Window
             @Override
             public void focusLost(FocusEvent e) {
                 label.select(0, 0);
+                if (useRef)
+                {
+                	text.value = ((JTextField)panel.getComponent(fieldId.value)).getText();                	
+                }
             }
         });
-		panel.add(label);
-		fieldId.value = panel.getComponentCount() - 1;
 	}
 	
 	private JButton makeButton(JPanel into, String text, String hoverMessage, ActionListener listener)
@@ -376,8 +411,6 @@ public class Window
 		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.NAME), name, nameField);
 		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.TEXTURE), pref, textureField);
 		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.MOD_ID), mod_id, modidField);
-		    
-		    submitButton(panel);
 		}
 		//Tool Sets
 		else if(flag == JsonFlag.Tool)
@@ -398,13 +431,10 @@ public class Window
 			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.PICKAXE), Lang.lang.getDefaultText(LangDefaultValueRef.PICKAXE), pickaxeField);
 			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.HOE), Lang.lang.getDefaultText(LangDefaultValueRef.HOE), hoeField);
 			componentList.addAll(Arrays.asList(new Integer[] { swordField.value, axeField.value, shovelField.value, pickaxeField.value, hoeField.value }));
-		    
-			submitButton(panel);
 		}
 		//armor sets
 		else if(flag == JsonFlag.Armor)
 		{
-			//JScrollPane scroll = new JScrollPane();
 			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 47, 0, 0));
 		    panel.add(sizer);
 		    
@@ -420,8 +450,6 @@ public class Window
 			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.LEGGINGS), Lang.lang.getDefaultText(LangDefaultValueRef.LEGGINGS), leggingsField);
 			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.BOOTS), Lang.lang.getDefaultText(LangDefaultValueRef.BOOTS), bootsField);
 			componentList.addAll(Arrays.asList(new Integer[] { helmetField.value, chestplateField.value, leggingsField.value, bootsField.value }));
-		    
-			submitButton(panel);
 		}
 		//blocks All
 		else if(flag == JsonFlag.Block)
@@ -432,17 +460,63 @@ public class Window
 		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.BLOCK_NAME), name, nameField);
 		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.TEXTURE), pref, textureField);
 		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.MOD_ID), mod_id, modidField);
-		    
-		    submitButton(panel);
 		}
-		
+		else if(flag == JsonFlag.Flame)
+		{
+			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 40, 0, 0));
+			panel.add(sizer);
+			
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.FLAME_NAME), name, nameField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.TEXTURE), pref, textureField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.MOD_ID), mod_id, modidField);
+		}
+		else if(flag == JsonFlag.Portal)
+		{
+			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 40, 0, 0));
+			panel.add(sizer);
+			
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.BLOCK_NAME), name, nameField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.TEXTURE), pref, textureField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.MOD_ID), mod_id, modidField);
+			JLabel ider = new JLabel(Lang.lang.getUILabel(LangUIFieldsRef.POSTFIX));
+			panel.add(ider);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.NS_POST), Lang.lang.getDefaultText(LangDefaultValueRef.NS), northSouthField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.EW_POST), Lang.lang.getDefaultText(LangDefaultValueRef.EW), eastWestField);
+			componentList.addAll(Arrays.asList(new Integer[] { northSouthField.value, eastWestField.value }));
+		}
+		else if(flag == JsonFlag.Pane)
+		{
+			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 76, 0, 0));
+			panel.add(sizer);
+			
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.BLOCK_NAME), name, nameField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.PANE_FACE), pref, textureField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.PANE_EDGE), paneside, sideField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.MOD_ID), mod_id, modidField);
+		}
+		else if(flag == JsonFlag.Stairs)
+		{
+			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 40, 0, 0));
+			panel.add(sizer);
+			
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.BLOCK_NAME), name, nameField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.TOP_TEXTURE), top, topField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.BOTTOM_TEXTURE), bottom, bottomField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.SIDE_TEXTURE), side, sideField);
+			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.MOD_ID), mod_id, modidField);
+		}
+		if (flag != JsonFlag.Empty)
+		{
+			submitButton(panel);			
+		}
 		contentPane.add(panel, BorderLayout.WEST);
 		return panel;
 	}
 	
 	private void tabMaker(String text, JsonPreview prev, boolean inner, int j)
 	{
-		String fileName = prev.getName() + (inner ? prev.getOptions().get(j) : "");
+		int innerOption = inner ? j : 0;
+		String fileName = prev.getFileName(innerOption);
 		
 		//create place to put read only text
 		JTextPane label = new JTextPane();
@@ -497,23 +571,23 @@ public class Window
 		
 		tabPanel.add(buttonClose, gbc);
 		tabs.setTabComponentAt(index, tabPanel);
-		jsons.put(tabPanel, prev);
+		jsons.put(tabPanel, new InnerPreview(prev, innerOption));
 		tabMap.put(tabPanel, scroll);
 		buttonClose.addActionListener(makeCloseTabListener(tabPanel, scroll, inner, inner ? prev.getOptions().get(j) : ""));
 	}
 	
-	private void getUbiquitousText(JPanel panel)
+	/*private void getUbiquitousText(JPanel panel)
 	{
 		name = ((JTextField)panel.getComponent(nameField.value)).getText();
 		pref = ((JTextField)panel.getComponent(textureField.value)).getText();
 		mod_id = ((JTextField)panel.getComponent(modidField.value)).getText();
-	}
+	}*/
 	
 	private ActionListener makeFilesAfterSubmit(JPanel panel, JsonFlag kind)
 	{
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				getUbiquitousText(panel);
+				//getUbiquitousText(panel);
 				ArrayList<String> components = new ArrayList<>();
 				for (int i = 0; i < componentList.size(); i++)
 				{
@@ -528,7 +602,33 @@ public class Window
 				JsonPreview[] prevs = new JsonPreview[fileTypes.size()];
 				for (int i = 0; i < fileTypes.size(); i++)
 				{
-					prevs[i] = new JsonPreview(fileTypes.get(i), name, pref, mod_id).add(components);
+					JsonType type = fileTypes.get(i);
+					if (type == JsonType.FLAME)
+					{
+						prevs[i] = new JsonPreview(type, name.value, pref.value, top.value, bottom.value, side.value, mod_id.value)
+								.replaceOptions(Arrays.asList(new String[] {
+										"_floor", "_floor0", "_floor1", "_side", "_side0", "_side1", "_side_alt", "_side_alt0", "_side_alt1", "_up", "_up0", "_up1", "_up_alt", "_up_alt0", "_up_alt1"
+								}));
+					}
+					else if (type == JsonType.PANE_BLOCK)
+					{
+						prevs[i] = new JsonPreview(type, name.value, pref.value, top.value, bottom.value, paneside.value, mod_id.value)
+								.replaceOptions(Arrays.asList(new String[] {
+										"_noside", "_noside_alt", "_post", "_side", "_side_alt"
+								}));
+					}
+					else if (kind == JsonFlag.Portal && type == JsonType.BLOCK_ITEM)
+					{
+						prevs[i] = new JsonPreview(type, name.value, pref.value, top.value, bottom.value, side.value, mod_id.value);
+					}
+					else if (kind == JsonFlag.Stairs && type == JsonType.BLOCK_ITEM)
+					{
+						prevs[i] = new JsonPreview(fileTypes.get(i), name.value, pref.value, top.value, bottom.value, side.value, mod_id.value).replaceOptions("stairs");
+					}
+					else
+					{
+						prevs[i] = new JsonPreview(fileTypes.get(i), name.value, pref.value, top.value, bottom.value, side.value, mod_id.value).replaceOptions(components);
+					}
 				}
 				
 				for (int i = 0; i < prevs.length; i++)
@@ -558,12 +658,13 @@ public class Window
 				}
 				else
 				{
-					jsons.get(c).getOptions().remove(option);
-					if(jsons.get(c).getOptions().isEmpty())
-					{
+					//jsons.get(c).getOptions().remove(option);
+					jsons.get(c).remove();
+					//if(jsons.get(c).getOptions().isEmpty())
+					//{
 						jsons.remove(c);
 						tabMap.remove(c);
-					}
+					//}
 				}
 				tabs.remove(scroll);
 			}
@@ -651,12 +752,12 @@ public class Window
 	    return panel;
 	}
 	
-	private int saveJson(String directory, JsonPreview json, int j)
+	private int saveJson(String directory, InnerPreview json)
 	{
-		String fileName = json.getFileName(j);
+		String fileName = json.getFileName();
 		File file = new File(directory + "\\" + fileName);
 		FileHandler.createFile(file);
-		if (FileHandler.writeFileExists(file, json.getFiles()[j]))
+		if (FileHandler.writeFileExists(file, json.getFile()))
 		{
 			return 0;
 		}
@@ -671,27 +772,49 @@ public class Window
 		int[] flags = new int[2];
 		flags[0] = 0;
 		flags[1] = 0;
-		for(Entry<Component, JsonPreview> en : jsons.entrySet())
+		for(Entry<Component, InnerPreview> en : jsons.entrySet())
 		{
-			for(int j = 0; j < en.getValue().getOptions().size(); j++)
+			//The second condition of the ORs are only relevant if the first condition is false
+			if ((Save.save.GenerateFolders() || FileHandler.doesFileSystemItemExist(path.value, en.getValue().getTypeFolder()))
+					&& (Save.save.Overwrite() || !FileHandler.doesFileSystemItemExist(path.value + "\\" + en.getValue().getTypeFolder(), en.getValue().getFileName())))
 			{
-				String tmp;
-				//The second condition of the ORs are only relevant if the first condition is false
-				if ((Save.save.GenerateFolders() || FileHandler.doesFileSystemItemExist(path, en.getValue().getType().folder))
-						&& (Save.save.Overwrite() || !FileHandler.doesFileSystemItemExist(path + "\\" + en.getValue().getType().folder, en.getValue().getFileName(j))))
-				{
-					tmp = FileHandler.directoryExists(path, en.getValue().getType().folder);
-					flags[saveJson(tmp, en.getValue(), j)]++;
-					tabs.remove(tabMap.remove(en.getKey()));
-				}
-				else
-				{
-					flags[1]++;
-					failedSaves.put(en.getKey(), en.getValue());
-				}
+				String tmp = FileHandler.directoryExists(path.value, en.getValue().getTypeFolder());
+				flags[saveJson(tmp, en.getValue())]++;
+				tabs.remove(tabMap.remove(en.getKey()));
+				//indsToRemove.add(j);
+			}
+			else
+			{
+				flags[1]++;
+				failedSaves.put(en.getKey(), en.getValue());
 			}
 		}
 		return flags;
+	}
+	
+	private void doSaveAction(String localPath)
+	{
+		String messageFollows = "";
+		if(localPath != null)
+		{
+			path.value = localPath;
+			if (!Save.save.updatePath(path.value))
+			{
+				refreshContent(messageFollows);
+				return;
+			}
+		}
+		int[] tmp = saveJsons();
+		messageFollows = (tmp[0] > 0 ? (tmp[0] + " " + Lang.lang.getMessage(LangMessageRef.SAVED)) : "")
+				+ (tmp[0] > 0 && tmp[1] > 0 ? " " : "")
+				+ (tmp[1] > 0 ? (tmp[1] + " " + Lang.lang.getMessage(LangMessageRef.FAILED)) : "")
+				+ (tmp[0] > 0 ? "  " + Lang.lang.getMessage(LangMessageRef.ALERT) : "");
+		jsons.clear();
+		jsons.putAll(failedSaves);
+		failedSaves.clear();
+		currentIndex = -1;
+		//saved
+		refreshContent(messageFollows);
 	}
 	
 	private ActionListener makeSaveAsListener(JPanel panel)
@@ -700,13 +823,12 @@ public class Window
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String messageFollows = "";
 				if(jsons.size() == 0)
 				{
 					return;
 				}
 				JFileChooser save = new JFileChooser();
-				save.setCurrentDirectory(new java.io.File(path));
+				save.setCurrentDirectory(new java.io.File(path.value));
 				//save
 				save.setDialogTitle(Lang.lang.getTitle(LangTitlesRef.SAVE_DIALOG));
 				save.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -722,27 +844,7 @@ public class Window
 					return;
 				}
 				
-				if(localPath != null)
-				{
-					path = localPath;
-					int[] tmp = saveJsons();
-					messageFollows = (tmp[0] > 0 ? (tmp[0] + " " + Lang.lang.getMessage(LangMessageRef.SAVED)) : "")
-							+ (tmp[0] > 0 && tmp[1] > 0 ? " " : "")
-							+ (tmp[1] > 0 ? (tmp[1] + " " + Lang.lang.getMessage(LangMessageRef.FAILED)) : "");
-					//File file = new File(this.getClass().getClassLoader().getResource(Reference.DATA_FILE).getFile().replace("%20", " "));
-					if (!Save.save.updatePath(path))
-					{
-						refreshContent(messageFollows);
-						return;
-					}
-				}
-				//tabs = new JTabbedPane(JTabbedPane.TOP);
-				jsons.clear();
-				jsons.putAll(failedSaves);
-				failedSaves.clear();
-				currentIndex = -1;
-				//saved
-				refreshContent(messageFollows);
+				doSaveAction(localPath);
 			}
 			
 		};
@@ -760,17 +862,7 @@ public class Window
 					return;
 				}
 				
-				int[] tmp = saveJsons();
-				String messageFollows = (tmp[0] > 0 ? (tmp[0] + " " + Lang.lang.getMessage(LangMessageRef.SAVED)) : "")
-						+ (tmp[0] > 0 && tmp[1] > 0 ? " " : "")
-						+ (tmp[1] > 0 ? (tmp[1] + " " + Lang.lang.getMessage(LangMessageRef.FAILED)) : "");
-				//tabs = new JTabbedPane(JTabbedPane.TOP);
-				jsons.clear();
-				jsons.putAll(failedSaves);
-				failedSaves.clear();
-				currentIndex = -1;
-				//saved
-				refreshContent(messageFollows);
+				doSaveAction(null);
 			}
 			
 		};
@@ -789,7 +881,7 @@ public class Window
 		fontChange(label);
 		
 		//set the read only text "save to: "
-		label.setText(Lang.lang.getMessage(LangMessageRef.SAVES_TO) + path + "\n" + message);
+		label.setText(Lang.lang.getMessage(LangMessageRef.SAVES_TO) + path.value + "\n" + message.value);
 		
 		panel.add(label);
 		contentPane.add(panel, BorderLayout.SOUTH);

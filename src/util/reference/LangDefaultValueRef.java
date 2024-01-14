@@ -6,6 +6,9 @@ public class LangDefaultValueRef
 	public static final String TEXTURE = "Texture Name";
 	public static final String MOD_ID = "Mod_ID";
 	
+	public static final String PANE_SIDE = "Side of Pane Texture";
+	public static final String STAIRS = "Stairs Postfix";
+	
 	public static final String SWORD = "Sword Postfix";
 	public static final String AXE = "Axe Postfix";
 	public static final String SHOVEL = "Shovel Postfix";
@@ -16,4 +19,7 @@ public class LangDefaultValueRef
 	public static final String CHESTPLATE = "Chestplate Postfix";
 	public static final String LEGGINGS = "Leggings Postfix";
 	public static final String BOOTS = "Boots Postfix";
+	
+	public static final String NS = "North South Postfix";
+	public static final String EW = "East West Postfix";
 }
