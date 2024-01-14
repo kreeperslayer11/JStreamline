@@ -13,4 +13,8 @@ public class LangMenuRef
 	public static final String TOOL_SET = "Tool Set Json Type";
 	public static final String ARMOR_SET = "Armor Set Json Type";
 	public static final String BLOCKS  = "Block Json Type";
+	public static final String FLAME = "Fire Json Type";
+	public static final String PORTAL = "Portal Json Type";
+	public static final String PANE = "Glass Pane Json Type";
+	public static final String STAIRS = "Stairs Json Type";
 }

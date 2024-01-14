@@ -18,7 +18,11 @@
         "Basic Item Json Type": "Basic Item",
         "Tool Set Json Type": "Tool Set",
         "Armor Set Json Type": "Armor Set",
-        "Block Json Type": "Blocks"
+        "Block Json Type": "Blocks",
+        "Fire Json Type": "Flame",
+        "Portal Json Type": "Portal",
+        "Glass Pane Json Type": "Glass Pane",
+        "Stairs Json Type": "Stairs"
     },
     "Resolutions": {
         "Default Resolution": "Default"
@@ -26,16 +30,24 @@
     "Messages": {
         "Save Fail Message": "FAILED.",
         "Save Success Message": "saved.",
-        "Jsons Save To": "save to: "
+        "Jsons Save To": "save to: ",
+        "Alert": "Don't forget to refresh your Dev Environment!"
     },
     "UILabels": {
         "Json Name": "Item Name",
         "Json Name for Sets": "Set Name",
-        "Json Name for Blocks": "BlockName",
+        "Json Name for Blocks": "Block Name",
+        "Json Name for Flames": "Flame Name",
         "Texture Name": "Texture Name",
         "Texture Name for Jsons with Postfixes": "Texture Prefix",
         "Mod_ID": "Mod_ID",
-        "Postfix Section Label": "PostFixes",
+        "Texture Name for pane edge": "Glass Pane Edge Texture",
+        "Texture Name for pane face": "Glass Pane Face Texture",
+        "Texture Name Top": "Top Texture",
+        "Texture Name Bottom": "Bottom Texture",
+        "Texture Name Side": "Side Texture",
+        "Postfix Section Label": "Postfixes",
+        "Stairs Postfix": "Stairs",
         "Sword Postfix": "Sword",
         "Axe Postfix": "Axe",
         "Shovel Postfix": "Shovel",
@@ -44,7 +56,9 @@
         "Helmet Postfix": "Helmet",
         "Chestplate Postfix": "Chestplate",
         "Leggings Postfix": "Leggings",
-        "Boots Postfix": "Boots"
+        "Boots Postfix": "Boots",
+        "North South Axis Name": "North South Axis Name",
+        "Ease West Axis Name": "East West Axis Name"
     },
     "UIButtons": {
         "Save": "Save File",
@@ -61,6 +75,8 @@
         "Json Name": "name",
         "Texture Name": "texturename",
         "Mod_ID": "Mod_ID",
+        "Side of Pane Texture": "texturename_edge",
+        "Stairs Postfix": "stairs",
         "Sword Postfix": "sword",
         "Axe Postfix": "axe",
         "Shovel Postfix": "shovel",
@@ -69,6 +85,8 @@
         "Helmet Postfix": "helmet",
         "Chestplate Postfix": "chestplate",
         "Leggings Postfix": "leggings",
-        "Boots Postfix": "boots"
+        "Boots Postfix": "boots",
+        "North South Postfix": "_ns",
+        "East West Postfix": "_ew"
     }
 }

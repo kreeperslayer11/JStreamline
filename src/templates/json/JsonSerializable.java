@@ -31,6 +31,6 @@ public abstract class JsonSerializable
 			}
 			prettier = prettier + (prettier.isEmpty() ? "" : "\n") + butchered[i];
 		}
-		return prettier;
+		return prettier.replace("\\u003d", "=");
 	}
 }

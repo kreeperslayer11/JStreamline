@@ -7,8 +7,8 @@ public class BlockItem extends JsonSerializable
 {
 	String parent;
 	
-	public BlockItem(String modid, String texture)
+	public BlockItem(String modid, String texture, String postfix)
 	{
-		this.parent = modid + ":" + JsonType.BLOCK_ITEM.parent + texture;
+		this.parent = modid + ":" + JsonType.BLOCK_ITEM.parent + texture + postfix;
 	}
 }
