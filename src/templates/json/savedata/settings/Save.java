@@ -27,6 +27,11 @@ public class Save extends AbstractJsonResource
 	{
 		JsonObject data = FileHandler.readInResource(Reference.DATA_FILE);
 		
+		if (data.get("Language") == null)
+		{
+			data.addProperty("Language", "english");
+		}
+		
 		ExportPath = JsonHandler.readFromElement(data.get("ExportPath"));
 		Resolution = JsonHandler.readFromElement(data.get("Resolution"));
 		Language = JsonHandler.readFromElement(data.get("Language"));
