@@ -1,6 +1,6 @@
 /bin/
-/resources/settings.json
-/resources/lang/lang_testLang.json
+resources/settings.json
+resources/lang/lang_testLang.json
 /libs
 # eclipse
 bin
@@ -9,4 +9,3 @@ bin
 .metadata
 .classpath
 .project
-resources/lang/lang_testLang.json
