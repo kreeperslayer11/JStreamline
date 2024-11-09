@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
@@ -88,11 +89,11 @@ public class FileHandler
 		JsonElement json;
 		try
 		{
-			json = JsonParser.parseString(content);
+			json = new JsonParser().parse(content);
 		}
 		catch (JsonSyntaxException e)
 		{
-			json = JsonParser.parseString("{}");
+			json = new JsonParser().parse("{}");
 		}
 		if (json.isJsonObject())
 		{
