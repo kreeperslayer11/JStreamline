@@ -1,6 +1,7 @@
 package util.json.parser;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import com.google.gson.JsonElement;
@@ -37,10 +38,10 @@ public class JsonHandler
 			JsonObject o = e.getAsJsonObject();
 			if (o != null)
 			{
-				Set<String> keys = o.keySet();
-				for (String key : keys)
+				Set<Entry<String, JsonElement>> entries = o.entrySet();
+				for (Entry<String, JsonElement> entry : entries)
 				{
-					map.put(key, o.get(key).getAsString());
+					map.put(entry.getKey(), entry.getValue().getAsString());
 				}
 			}
 		}
