@@ -1,0 +1,352 @@
+{
+    "Options": [
+        {
+            "WhoAmI": "Fence With Gate",
+            "Required": [
+                {
+                    "SectionName": "",
+                    "SectionFields": [
+                        {
+                            "id": "1",
+                            "Title": "Json Name for Fence",
+                            "Default": "Json Name"
+                        },
+                        {
+                            "id": "2",
+                            "Title": "Texture Name for Fence Part",
+                            "Default": "Texture Name"
+                        },
+                        {
+                            "id": "3",
+                            "Title": "Mod_ID",
+                            "Default": "Mod_ID"
+                        }
+                    ]
+                }
+            ],
+            "Template": [
+                {
+                    "FileName": "**1**_fence",
+                    "SaveTo": "**3**/blockstates",
+                    "Contents": {
+                        "multipart": [
+                            { "apply": { "model": "**3**:**1**_fence_post" }},
+                            { 
+                                "when": { "north": "true" },
+                                "apply": { "model": "**3**:**1**_fence_side", "uvlock": true }
+                            },
+                            {
+                                "when": {"east": "true" },
+                                "apply": { "model": "**3**:**1**_fence_side", "y": 90, "uvlock": true }
+                            },
+                            {
+                                "when": {"south": "true" },
+                                "apply": { "model": "**3**:**1**_fence_side", "y": 180, "uvlock": true }
+                            },
+                            {
+                                "when": {"west": "true" },
+                                "apply": { "model": "**3**:**1**_fence_side", "y": 270, "uvlock": true }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "FileName": "**1**_fence_inventory",
+                    "SaveTo": "**3**/models/block",
+                    "Contents": {
+                        "parent": "block/fence_inventory",
+                        "textures": {
+                            "texture": "**3**:blocks/**2**"
+                        }
+                    }
+                },
+                {
+                    "FileName": "**1**_fence_post",
+                    "SaveTo": "**3**/models/block",
+                    "Contents": {
+                        "parent": "block/fence_post",
+                        "textures": {
+                            "texture": "**3**:blocks/**2**"
+                        }
+                    }
+                },
+                {
+                    "FileName": "**1**_fence_side",
+                    "SaveTo": "**3**/models/block",
+                    "Contents": {
+                        "parent": "block/fence_side",
+                        "textures": {
+                            "texture": "**3**:blocks/**2**"
+                        }
+                    }
+                },
+                {
+                    "FileName": "**1**_fence",
+                    "SaveTo": "**3**/models/item",
+                    "Contents": {
+                        "parent": "**3**:block/**1**_fence_inventory"
+                    }
+                },
+                {
+                    "FileName": "**1**_fence_gate",
+                    "SaveTo": "**3**/blockstates",
+                    "Contents": {
+                        "variants": {
+                            "facing=south,in_wall=false,open=false": { "model": "**3**:**1**_fence_gate_closed", "uvlock": true },
+                            "facing=west,in_wall=false,open=false":  { "model": "**3**:**1**_fence_gate_closed", "uvlock": true, "y": 90 },
+                            "facing=north,in_wall=false,open=false": { "model": "**3**:**1**_fence_gate_closed", "uvlock": true, "y": 180 },
+                            "facing=east,in_wall=false,open=false":  { "model": "**3**:**1**_fence_gate_closed", "uvlock": true, "y": 270 },
+                            "facing=south,in_wall=false,open=true": { "model": "**3**:**1**_fence_gate_open", "uvlock": true },
+                            "facing=west,in_wall=false,open=true":  { "model": "**3**:**1**_fence_gate_open", "uvlock": true, "y": 90 },
+                            "facing=north,in_wall=false,open=true": { "model": "**3**:**1**_fence_gate_open", "uvlock": true, "y": 180 },
+                            "facing=east,in_wall=false,open=true":  { "model": "**3**:**1**_fence_gate_open", "uvlock": true, "y": 270 },
+                            "facing=south,in_wall=true,open=false": { "model": "**3**:**1**_wall_gate_closed", "uvlock": true },
+                            "facing=west,in_wall=true,open=false":  { "model": "**3**:**1**_wall_gate_closed", "uvlock": true, "y": 90 },
+                            "facing=north,in_wall=true,open=false": { "model": "**3**:**1**_wall_gate_closed", "uvlock": true, "y": 180 },
+                            "facing=east,in_wall=true,open=false":  { "model": "**3**:**1**_wall_gate_closed", "uvlock": true, "y": 270 },
+                            "facing=south,in_wall=true,open=true": { "model": "**3**:**1**_wall_gate_open", "uvlock": true },
+                            "facing=west,in_wall=true,open=true":  { "model": "**3**:**1**_wall_gate_open", "uvlock": true, "y": 90 },
+                            "facing=north,in_wall=true,open=true": { "model": "**3**:**1**_wall_gate_open", "uvlock": true, "y": 180 },
+                            "facing=east,in_wall=true,open=true":  { "model": "**3**:**1**_wall_gate_open", "uvlock": true, "y": 270 }
+                        }
+                    }
+                },
+                {
+                    "FileName": "**1**_fence_gate_open",
+                    "SaveTo": "**3**/models/block",
+                    "Contents": {
+                        "parent": "block/fence_gate_open",
+                        "textures": {
+                            "texture": "**3**:blocks/**2**"
+                        }
+                    }
+                },
+                {
+                    "FileName": "**1**_fence_gate_closed",
+                    "SaveTo": "**3**/models/block",
+                    "Contents": {
+                        "parent": "block/fence_gate_closed",
+                        "textures": {
+                            "texture": "**3**:blocks/**2**"
+                        }
+                    }
+                },
+                {
+                    "FileName": "**1**_wall_gate_open",
+                    "SaveTo": "**3**/models/block",
+                    "Contents": {
+                        "parent": "block/wall_gate_open",
+                        "textures": {
+                            "texture": "**3**:blocks/**2**"
+                        }
+                    }
+                },
+                {
+                    "FileName": "**1**_wall_gate_closed",
+                    "SaveTo": "**3**/models/block",
+                    "Contents": {
+                        "parent": "block/wall_gate_closed",
+                        "textures": {
+                            "texture": "**3**:blocks/**2**"
+                        }
+                    }
+                },
+                {
+                    "FileName": "**1**_fence_gate",
+                    "SaveTo": "**3**/models/item",
+                    "Contents": {
+                        "parent": "**3**:block/**1**_fence_gate_closed"
+                    }
+                }
+            ]
+
+        },
+        {
+            "WhoAmI": "Fence No Gate",
+            "Required": [
+                {
+                    "SectionName": "",
+                    "SectionFields": [
+                        {
+                            "id": "1",
+                            "Title": "Json Name for Fence",
+                            "Default": "Json Name"
+                        },
+                        {
+                            "id": "2",
+                            "Title": "Texture Name for Fence Part",
+                            "Default": "Texture Name"
+                        },
+                        {
+                            "id": "3",
+                            "Title": "Mod_ID",
+                            "Default": "Mod_ID"
+                        }
+                    ]
+                }
+            ],
+            "Template": [
+                {
+                    "FileName": "**1**_fence",
+                    "SaveTo": "**3**/blockstates",
+                    "Contents": {
+                        "multipart": [
+                            { "apply": { "model": "**3**:**1**_fence_post" }},
+                            { 
+                                "when": { "north": "true" },
+                                "apply": { "model": "**3**:**1**_fence_side", "uvlock": true }
+                            },
+                            {
+                                "when": {"east": "true" },
+                                "apply": { "model": "**3**:**1**_fence_side", "y": 90, "uvlock": true }
+                            },
+                            {
+                                "when": {"south": "true" },
+                                "apply": { "model": "**3**:**1**_fence_side", "y": 180, "uvlock": true }
+                            },
+                            {
+                                "when": {"west": "true" },
+                                "apply": { "model": "**3**:**1**_fence_side", "y": 270, "uvlock": true }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "FileName": "**1**_fence_inventory",
+                    "SaveTo": "**3**/models/block",
+                    "Contents": {
+                        "parent": "block/fence_inventory",
+                        "textures": {
+                            "texture": "**3**:blocks/**2**"
+                        }
+                    }
+                },
+                {
+                    "FileName": "**1**_fence_post",
+                    "SaveTo": "**3**/models/block",
+                    "Contents": {
+                        "parent": "block/fence_post",
+                        "textures": {
+                            "texture": "**3**:blocks/**2**"
+                        }
+                    }
+                },
+                {
+                    "FileName": "**1**_fence_side",
+                    "SaveTo": "**3**/models/block",
+                    "Contents": {
+                        "parent": "block/fence_side",
+                        "textures": {
+                            "texture": "**3**:blocks/**2**"
+                        }
+                    }
+                },
+                {
+                    "FileName": "**1**_fence",
+                    "SaveTo": "**3**/models/item",
+                    "Contents": {
+                        "parent": "**3**:block/**1**_fence_inventory"
+                    }
+                }
+            ]
+        },
+        {
+            "WhoAmI": "Fence Only Gate",
+            "Required": [
+                {
+                    "SectionName": "",
+                    "SectionFields": [
+                        {
+                            "id": "1",
+                            "Title": "Json Name for Fence",
+                            "Default": "Json Name"
+                        },
+                        {
+                            "id": "2",
+                            "Title": "Texture Name for Fence Part",
+                            "Default": "Texture Name"
+                        },
+                        {
+                            "id": "3",
+                            "Title": "Mod_ID",
+                            "Default": "Mod_ID"
+                        }
+                    ]
+                }
+            ],
+            "Template": [
+                {
+                    "FileName": "**1**_fence_gate",
+                    "SaveTo": "**3**/blockstates",
+                    "Contents": {
+                        "variants": {
+                            "facing=south,in_wall=false,open=false": { "model": "**3**:**1**_fence_gate_closed", "uvlock": true },
+                            "facing=west,in_wall=false,open=false":  { "model": "**3**:**1**_fence_gate_closed", "uvlock": true, "y": 90 },
+                            "facing=north,in_wall=false,open=false": { "model": "**3**:**1**_fence_gate_closed", "uvlock": true, "y": 180 },
+                            "facing=east,in_wall=false,open=false":  { "model": "**3**:**1**_fence_gate_closed", "uvlock": true, "y": 270 },
+                            "facing=south,in_wall=false,open=true": { "model": "**3**:**1**_fence_gate_open", "uvlock": true },
+                            "facing=west,in_wall=false,open=true":  { "model": "**3**:**1**_fence_gate_open", "uvlock": true, "y": 90 },
+                            "facing=north,in_wall=false,open=true": { "model": "**3**:**1**_fence_gate_open", "uvlock": true, "y": 180 },
+                            "facing=east,in_wall=false,open=true":  { "model": "**3**:**1**_fence_gate_open", "uvlock": true, "y": 270 },
+                            "facing=south,in_wall=true,open=false": { "model": "**3**:**1**_wall_gate_closed", "uvlock": true },
+                            "facing=west,in_wall=true,open=false":  { "model": "**3**:**1**_wall_gate_closed", "uvlock": true, "y": 90 },
+                            "facing=north,in_wall=true,open=false": { "model": "**3**:**1**_wall_gate_closed", "uvlock": true, "y": 180 },
+                            "facing=east,in_wall=true,open=false":  { "model": "**3**:**1**_wall_gate_closed", "uvlock": true, "y": 270 },
+                            "facing=south,in_wall=true,open=true": { "model": "**3**:**1**_wall_gate_open", "uvlock": true },
+                            "facing=west,in_wall=true,open=true":  { "model": "**3**:**1**_wall_gate_open", "uvlock": true, "y": 90 },
+                            "facing=north,in_wall=true,open=true": { "model": "**3**:**1**_wall_gate_open", "uvlock": true, "y": 180 },
+                            "facing=east,in_wall=true,open=true":  { "model": "**3**:**1**_wall_gate_open", "uvlock": true, "y": 270 }
+                        }
+                    }
+                },
+                {
+                    "FileName": "**1**_fence_gate_open",
+                    "SaveTo": "**3**/models/block",
+                    "Contents": {
+                        "parent": "block/fence_gate_open",
+                        "textures": {
+                            "texture": "**3**:blocks/**2**"
+                        }
+                    }
+                },
+                {
+                    "FileName": "**1**_fence_gate_closed",
+                    "SaveTo": "**3**/models/block",
+                    "Contents": {
+                        "parent": "block/fence_gate_closed",
+                        "textures": {
+                            "texture": "**3**:blocks/**2**"
+                        }
+                    }
+                },
+                {
+                    "FileName": "**1**_wall_gate_open",
+                    "SaveTo": "**3**/models/block",
+                    "Contents": {
+                        "parent": "block/wall_gate_open",
+                        "textures": {
+                            "texture": "**3**:blocks/**2**"
+                        }
+                    }
+                },
+                {
+                    "FileName": "**1**_wall_gate_closed",
+                    "SaveTo": "**3**/models/block",
+                    "Contents": {
+                        "parent": "block/wall_gate_closed",
+                        "textures": {
+                            "texture": "**3**:blocks/**2**"
+                        }
+                    }
+                },
+                {
+                    "FileName": "**1**_fence_gate",
+                    "SaveTo": "**3**/models/item",
+                    "Contents": {
+                        "parent": "**3**:block/**1**_fence_gate_closed"
+                    }
+                }
+            ]
+        }
+    ]
+}

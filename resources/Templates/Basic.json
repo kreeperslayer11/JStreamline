@@ -1,0 +1,367 @@
+{
+	"Options": [
+		{
+			"WhoAmI": "Basic Item",
+			"Required": [
+				{
+					"SectionName": "",
+					"SectionFields": [
+						{
+							"id": "1",
+							"Title": "Json Name",
+							"Default": "Json Name"						
+						},
+						{
+							"id": "2",
+							"Title": "Texture Name",
+							"Default": "Texture Name"
+						},
+						{
+							"id": "3",
+							"Title": "Mod_ID",
+							"Default": "Mod_ID"						
+						}
+					]
+				}
+			],
+			"Template": [
+				{
+					"FileName": "**1**",
+					"SaveTo": "**3**/models/item",
+					"Contents": {
+						"parent": "item/generated",
+						"textures": {
+							"layer0": "**3**:items/**2**"
+						}	
+					}
+				}
+			]
+		},
+		{
+			"WhoAmI": "Block",
+			"Required": [
+				{
+					"SectionName": "",
+					"SectionFields": [
+						{
+							"id": "1",
+							"Title": "Json Name for Blocks",
+							"Default": "Json Name"
+						},
+						{
+							"id": "2",
+							"Title": "Texture Name",
+							"Default": "Texture Name"
+						},
+						{
+							"id": "3",
+							"Title": "Mod_ID",
+							"Default": "Mod_ID"
+						}
+					]
+				}
+			],
+			"Template": [
+				{
+					"FileName": "**1**",
+					"SaveTo": "**3**/models/block",
+					"Contents": {
+						"parent": "block/cube_all",
+						"textures": {
+							"all": "**3**:blocks/**2**"
+						}
+					}
+				},
+				{
+					"FileName": "**1**",
+					"SaveTo": "**3**/models/item",
+					"Contents": {
+						"parent": "**3**:block/**1**"
+					}
+				},
+				{
+					"FileName": "**1**",
+					"SaveTo": "**3**/blockstates",
+					"Contents": {
+						"variants": {
+							"normal": {
+								"model": "**3**:**1**"
+							}
+						}
+					}
+				}
+			]
+		},
+		{
+			"WhoAmI": "Log",
+			"Required": [
+				{
+					"SectionName": "",
+					"SectionFields": [
+						{
+							"id": "1",
+							"Title": "Json Name for Blocks",
+							"Default": "Json Name"
+						},
+						{
+							"id": "2",
+							"Title": "Texture Name Top",
+							"Default": "Texture Name"
+						},
+						{
+							"id": "u1",
+							"Title": "Texture Name Side",
+							"Default": "Texture Name"
+						},
+						{
+							"id": "3",
+							"Title": "Mod_ID",
+							"Default": "Mod_ID"
+						}
+					]
+				}
+			],
+			"Template": [
+				{
+					"FileName": "**1**",
+					"SaveTo": "**3**/blockstates",
+					"Contents": {
+						"variants": {
+							"axis=y":  { "model": "**3**:**1**" },
+							"axis=z":   { "model": "**3**:**1**", "x": 90 },
+							"axis=x":   { "model": "**3**:**1**", "x": 90, "y": 90 },
+							"axis=none": { "model": "**3**:**1**_side" }
+						}
+					}
+				},
+				{
+					"FileName": "**1**",
+					"SaveTo": "**3**/models/block",
+					"Contents": {
+						"parent": "block/cube_column",
+						"textures": {
+							"end": "**3**:blocks/**2**",
+							"side": "**3**:blocks/**u1**"
+						}
+					}
+				},
+				{
+					"FileName": "**1**_side",
+					"SaveTo": "**3**/models/block",
+					"Contents": {
+						"parent": "block/cube_all",
+						"textures": {
+							"all": "**3**:blocks/**u1**"
+						}
+					}
+				},
+				{
+					"FileName": "**1**",
+					"SaveTo": "**3**/models/item",
+					"Contents": {
+						"parent": "**3**:block/**1**"
+					}
+				}
+			]
+		},
+		{
+			"WhoAmI": "Tool Set",
+			"Required": [
+				{
+					"SectionName": "",
+					"SectionFields": [
+						{
+							"id": "1",
+							"Title": "Json Name for Sets",
+							"Default": "Json Name"
+						},
+						{ 
+							"id": "2",
+							"Title": "Texture Name for Jsons with Postfixes",
+							"Default": "Texture Name"
+						},
+						{
+							"id": "3",
+							"Title": "Mod_ID",
+							"Default": "Mod_ID"
+						}
+					]
+				},
+				{
+					"SectionName": "Postfix Section Label",
+					"SectionFields": [
+						{
+							"id": "u1",
+							"Title": "Sword Postfix",
+							"Default": "Sword Postfix"
+						},
+						{
+							"id": "u2",
+							"Title": "Axe Postfix",
+							"Default": "Axe Postfix"
+						},
+						{
+							"id": "u3",
+							"Title": "Shovel Postfix",
+							"Default": "Shovel Postfix"
+						},
+						{
+							"id": "u4",
+							"Title": "Pickaxe Postfix",
+							"Default": "Pickaxe Postfix"
+						},
+						{
+							"id": "u5",
+							"Title": "Hoe Postfix",
+							"Default": "Hoe Postfix"
+						}
+					]
+				}
+			],
+			"Template": [
+				{
+					"FileName": "**1****u1**",
+					"SaveTo": "**3**/models/item",
+					"Contents": {
+						"parent": "item/handheld",
+						"textures": {
+							"layer0": "**3**:items/**2****u1**"
+						}
+					}
+				},
+				{
+					"FileName": "**1****u2**",
+					"SaveTo": "**3**/models/item",
+					"Contents": {
+						"parent": "item/handheld",
+						"textures": {
+							"layer0": "**3**:items/**2****u2**"
+						}
+					}
+				},
+				{
+					"FileName": "**1****u3**",
+					"SaveTo": "**3**/models/item",
+					"Contents": {
+						"parent": "item/handheld",
+						"textures": {
+							"layer0": "**3**:items/**2****u3**"
+						}
+					}
+				},
+				{
+					"FileName": "**1****u4**",
+					"SaveTo": "**3**/models/item",
+					"Contents": {
+						"parent": "item/handheld",
+						"textures": {
+							"layer0": "**3**:items/**2****u4**"
+						}
+					}
+				},
+				{
+					"FileName": "**1****u5**",
+					"SaveTo": "**3**/models/item",
+					"Contents": {
+						"parent": "item/handheld",
+						"textures": {
+							"layer0": "**3**:items/**2****u5**"
+						}
+					}
+				}
+			]
+		},
+		{
+			"WhoAmI": "Armor Set",
+			"Required": [
+				{
+					"SectionName": "",
+					"SectionFields": [
+						{
+							"id": "1",
+							"Title": "Json Name for Sets",
+							"Default": "Json Name"
+						},
+						{ 
+							"id": "2",
+							"Title": "Texture Name for Jsons with Postfixes",
+							"Default": "Texture Name"
+						},
+						{
+							"id": "3",
+							"Title": "Mod_ID",
+							"Default": "Mod_ID"
+						}
+					]
+				},
+				{
+					"SectionName": "Postfix Section Label",
+					"SectionFields": [
+						{
+							"id": "u1",
+							"Title": "Helmet Postfix",
+							"Default": "Helmet Postfix"
+						},
+						{
+							"id": "u2",
+							"Title": "Chestplate Postfix",
+							"Default": "Chestplate Postfix"
+						},
+						{
+							"id": "u3",
+							"Title": "Leggings Postfix",
+							"Default": "Leggings Postfix"
+						},
+						{
+							"id": "u4",
+							"Title": "Boots Postfix",
+							"Default": "Boots Postfix"
+						}
+					]
+				}
+			],
+			"Template": [
+				{
+					"FileName": "**1****u1**",
+					"SaveTo": "**3**/models/item",
+					"Contents": {
+						"parent": "item/generated",
+						"textures": {
+							"layer0": "**3**:items/**2****u1**"
+						}	
+					}
+				},
+				{
+					"FileName": "**1****u2**",
+					"SaveTo": "**3**/models/item",
+					"Contents": {
+						"parent": "item/generated",
+						"textures": {
+							"layer0": "**3**:items/**2****u2**"
+						}	
+					}
+				},
+				{
+					"FileName": "**1****u3**",
+					"SaveTo": "**3**/models/item",
+					"Contents": {
+						"parent": "item/generated",
+						"textures": {
+							"layer0": "**3**:items/**2****u3**"
+						}	
+					}
+				},
+				{
+					"FileName": "**1****u4**",
+					"SaveTo": "**3**/models/item",
+					"Contents": {
+						"parent": "item/generated",
+						"textures": {
+							"layer0": "**3**:items/**2****u4**"
+						}	
+					}
+				}
+			]
+		}
+	]
+}

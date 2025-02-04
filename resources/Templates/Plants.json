@@ -1,0 +1,148 @@
+{
+	"Options": [
+        {
+            "WhoAmI": "Plant",
+            "Required": [
+                {
+                    "SectionName": "",
+                    "SectionFields": [
+						{
+							"id": "1",
+							"Title": "Json Name for Generic",
+							"Default": "Json Name"						
+						},
+						{
+							"id": "2",
+							"Title": "Texture Name for Cross",
+							"Default": "Texture Name"
+						},
+						{
+							"id": "3",
+							"Title": "Mod_ID",
+							"Default": "Mod_ID"						
+						}
+					]
+                }
+            ],
+            "Template": [
+                {
+                    "FileName": "**1**",
+                    "SaveTo": "**3**/blockstates",
+                    "Contents": {
+                        "variants": {
+                            "stage=0": { "model": "**3**:**1**" },
+                            "stage=1": { "model": "**3**:**1**" }
+                        }
+                    }
+                },
+                {
+                    "FileName": "**1**",
+                    "SaveTo": "**3**/models/block",
+                    "Contents": {
+                        "parent": "block/cross",
+                        "textures": {
+                            "cross": "**3**:blocks/**2**"
+                        }
+                    }
+                },
+                {
+                    "FileName": "**1**",
+                    "SaveTo": "**3**/models/item",
+                    "Contents": {
+						"parent": "item/generated",
+						"textures": {
+							"layer0": "**3**:blocks/**2**"
+						}	
+					}
+                }
+            ]
+        },
+        {
+            "WhoAmI": "Crop",
+            "Required": [
+                {
+                    "SectionName": "",
+                    "SectionFields": [
+                        {
+							"id": "1",
+							"Title": "Json Name for Generic",
+							"Default": "Json Name"						
+						},
+						{
+							"id": "2",
+							"Title": "Texture Name",
+							"Default": "Texture Name"
+						},
+						{
+							"id": "3",
+							"Title": "Mod_ID",
+							"Default": "Mod_ID"						
+						},
+                        {
+                            "id": "i1",
+                            "Title": "Number of Stages",
+                            "Default": "1"
+                        }
+                    ]
+                },
+                {
+                    "SectionName": "Postfix Section Label",
+                    "SectionFields": [
+                        {
+                            "id": "u1",
+                            "Title": "Stage Postfix",
+                            "Default": "Stage Postfix"
+                        }
+                    ]
+                }
+            ],
+            "Template": [
+                {
+                    "FileName": "**1**",
+                    "SaveTo": "**3**/blockstates",
+                    "Iterate": [
+                        {
+                            "For": "i1",
+                            "At": [
+                                "ContentLevel"
+                            ]
+                        }
+                    ],
+                    "Contents":{
+                        "variants": {
+                            "**i1[0]**": "\"age=**i1**\": { \"model\": \"**3**:**1****u1****i1**\" }"
+                        }
+                    }
+                },
+                {
+                    "FileName": "**1****u1****i1**",
+                    "SaveTo": "**3**/models/block",
+                    "Iterate": [
+                        {
+                            "For": "i1",
+                            "At": [
+                                "FileLevel"
+                            ]
+                        }
+                    ],
+                    "Contents": {
+                        "parent": "block/crop",
+                        "textures": {
+                            "crop": "**3**:blocks/**2****u1****i1**"
+                        }
+                    }
+                },
+                {
+                    "FileName": "**1**",
+                    "SaveTo": "**3**/models/item",
+                    "Contents": {
+						"parent": "item/generated",
+						"textures": {
+							"layer0": "**3**:items/**2**"
+						}	
+					}
+                }
+            ]
+        }
+    ]
+}

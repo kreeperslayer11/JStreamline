@@ -2,15 +2,21 @@ package main;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.event.FocusEvent.Cause;
+import java.awt.font.FontRenderContext;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.swing.*;
 
+import templates.json.datareading.AutoGen;
+import templates.json.datareading.Template;
+import templates.json.datareading.options.Field;
+import templates.json.datareading.options.FieldHandler;
+import templates.json.datareading.options.FieldSection;
 import templates.json.savedata.lang.Lang;
 import templates.json.savedata.settings.Save;
 import util.FileHandler;
@@ -20,19 +26,15 @@ import util.RefInt;
 import util.RefString;
 import util.ResVals;
 import util.Resolution;
-import util.json.generator.JsonFlag;
-import util.json.generator.JsonType;
-import util.reference.LangDefaultValueRef;
 import util.reference.LangMenuRef;
 import util.reference.LangMessageRef;
 import util.reference.LangResRef;
 import util.reference.LangTitlesRef;
 import util.reference.LangUIButtonsRef;
-import util.reference.LangUIFieldsRef;
 
 public class Window 
 {
-	private JsonFlag flag;
+	private RefString WhichOptionIsOpen;
 	private JFrame frame;
 	private JPanel contentPane;
 	private Resolution res;
@@ -43,31 +45,46 @@ public class Window
 	private Map<Component, InnerPreview> failedSaves;
 	private JTabbedPane tabs;
 	private int currentIndex = -1;
-	private RefString path, message, mod_id, pref, side, paneside, top, bottom, name;
+	private RefString path, message;
 	
-	private RefInt nameField = new RefInt(), textureField  = new RefInt(), modidField  = new RefInt(), 
-			swordField = new RefInt(), axeField = new RefInt(), shovelField = new RefInt(), 
-			pickaxeField = new RefInt(), hoeField = new RefInt(), helmetField = new RefInt(), 
-			chestplateField = new RefInt(), leggingsField = new RefInt(), bootsField = new RefInt(),
-			topField = new RefInt(), bottomField = new RefInt(), sideField = new RefInt(),
-			northSouthField = new RefInt(), eastWestField = new RefInt();
+	//Maps a Field to the index in componentList
+	private HashMap<Field, RefInt> fieldUIIds = new HashMap<>();
+	private String[] possibleTemplates;
 	private ArrayList<Integer> componentList = new ArrayList<>();
 	
-	public Window(JFrame frame, JPanel contentPane, Resolution res, String path, String reso)
+	private String ClickSelectMode;
+	private String TabSelectMode;
+	
+	public Window(JFrame frame, JPanel contentPane, Resolution res, String path, String reso, String modeClick, String modeTab)
 	{
-		this.flag = JsonFlag.Empty;
+		this.WhichOptionIsOpen = new RefString("");
+		
+		//Here we create a single field for each field id specified in the json files, which are stored in AutoGen.gen
+		ArrayList<Template> alltemplates = AutoGen.gen.getTemplates();
+		possibleTemplates = new String[alltemplates.size()];
+		for (int i = 0; i < alltemplates.size(); i++)
+		{
+			possibleTemplates[i] = alltemplates.get(i).whoAmI();
+			ArrayList<FieldSection> sectionsForWhoAmI = FieldHandler.handler.acquireSectionsForMe(alltemplates.get(i).whoAmI());
+			for (int j = 0; j < sectionsForWhoAmI.size(); j++)
+			{
+				FieldSection section = sectionsForWhoAmI.get(j);
+				while(section.HasNextField())
+				{
+					Field field = section.getNextField();
+					if (!fieldUIIds.containsKey(field))
+					{
+						fieldUIIds.put(field, new RefInt());
+					}
+				}
+			}
+		}
+		
 		this.frame = frame;
 		this.contentPane = contentPane;
 		this.res = res;
 		this.path = new RefString(path);
 		this.message = new RefString("");
-		this.mod_id = new RefString(Lang.lang.getDefaultText(LangDefaultValueRef.MOD_ID));
-		this.pref = new RefString(Lang.lang.getDefaultText(LangDefaultValueRef.TEXTURE));
-		this.top = new RefString(Lang.lang.getDefaultText(LangDefaultValueRef.TEXTURE));
-		this.bottom = new RefString(Lang.lang.getDefaultText(LangDefaultValueRef.TEXTURE));
-		this.side = new RefString(Lang.lang.getDefaultText(LangDefaultValueRef.TEXTURE));
-		this.paneside = new RefString(Lang.lang.getDefaultText(LangDefaultValueRef.PANE_SIDE));
-		this.name = new RefString(Lang.lang.getDefaultText(LangDefaultValueRef.NAME));
 		
 		contentPane.setLayout(new BorderLayout(res.getBorder(), res.getBorder()));
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -82,6 +99,9 @@ public class Window
 			res.resolutionChange(res.getIndexFromSaveData(s));
 			frame.setSize(res.getWidth(), res.getHeight());
 		}
+		
+		ClickSelectMode = modeClick;
+		TabSelectMode = modeTab;
 		
 		frame.setVisible(true);
 		frame.setResizable(false);
@@ -164,19 +184,26 @@ public class Window
     		makeMenuOption(sub, langs[i], makeLangListener(langs[i]));
     	}
     	
+    	sub = makeMenu(pre, Lang.lang.getMenu(LangMenuRef.SELECTMODE_CLICK));
+    	makeMenuOption(sub, Lang.lang.getMenu(LangMenuRef.MODE_HIGHLIGHT), makeClickModeListener(LangMenuRef.MODE_HIGHLIGHT));
+    	makeMenuOption(sub, Lang.lang.getMenu(LangMenuRef.MODE_CURSORPRE), makeClickModeListener(LangMenuRef.MODE_CURSORPRE));
+    	makeMenuOption(sub, Lang.lang.getMenu(LangMenuRef.MODE_CURSORPOST), makeClickModeListener(LangMenuRef.MODE_CURSORPOST));
+    	makeMenuOption(sub, Lang.lang.getMenu(LangMenuRef.MODE_CURSORCLICK), makeClickModeListener(LangMenuRef.MODE_CURSORCLICK));
+    	
+    	sub = makeMenu(pre, Lang.lang.getMenu(LangMenuRef.SELECTMODE_TAB));
+    	makeMenuOption(sub, Lang.lang.getMenu(LangMenuRef.MODE_HIGHLIGHT), makeTabModeListener(LangMenuRef.MODE_HIGHLIGHT));
+    	makeMenuOption(sub, Lang.lang.getMenu(LangMenuRef.MODE_CURSORPRE), makeTabModeListener(LangMenuRef.MODE_CURSORPRE));
+    	makeMenuOption(sub, Lang.lang.getMenu(LangMenuRef.MODE_CURSORPOST), makeTabModeListener(LangMenuRef.MODE_CURSORPOST));
+    	
     	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.EXIT), makeExitListener());//exit
     	//END FILE==============================================================
     	//TYPES=================================================================
     	menu = makeMenu(menuBar, Lang.lang.getMenu(LangMenuRef.TYPES), KeyEvent.VK_T);
     	//TYPES SUB MENU========================================================
-    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.BASIC_ITEM), makeTypeListener(JsonFlag.BasicItem));
-    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.TOOL_SET), makeTypeListener(JsonFlag.Tool));
-    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.ARMOR_SET), makeTypeListener(JsonFlag.Armor));
-    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.BLOCKS), makeTypeListener(JsonFlag.Block));
-    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.FLAME), makeTypeListener(JsonFlag.Flame));
-    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.PORTAL), makeTypeListener(JsonFlag.Portal));
-    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.PANE), makeTypeListener(JsonFlag.Pane));
-    	makeMenuOption(menu, Lang.lang.getMenu(LangMenuRef.STAIRS), makeTypeListener(JsonFlag.Stairs));
+    	for (int i = 0; i < possibleTemplates.length; i++)
+    	{
+    		makeMenuOption(menu, Lang.lang.getMenu(possibleTemplates[i]), makeTypeListener(possibleTemplates[i]));
+    	}
 	}
 	
 	private ActionListener makeResolutionListener(int num)
@@ -202,11 +229,29 @@ public class Window
 		};
 	}
 	
-	private ActionListener makeTypeListener(JsonFlag num)
+	private ActionListener makeClickModeListener(String mode) {
+		return new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Save.save.updateSelectModeClick(mode);
+				ClickSelectMode = mode;
+			}
+		};
+	}
+	
+	private ActionListener makeTabModeListener(String mode) {
+		return new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Save.save.updateSelectModeTab(mode);
+				TabSelectMode = mode;
+			}
+		};
+	}
+	
+	private ActionListener makeTypeListener(String whoAmI)
 	{
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				flag = num;
+				WhichOptionIsOpen.value = whoAmI;
 				west = makeWestRegion();
 				remakeContent(BorderLayout.WEST);
 				refreshContent("");
@@ -221,7 +266,7 @@ public class Window
 				//jsons = new ArrayList<JsonPreview>();
 				jsons = new HashMap<>();
 				tabs = new JTabbedPane(JTabbedPane.TOP);
-				flag = JsonFlag.Empty;
+				WhichOptionIsOpen.value = "";
 				currentIndex = -1;
 				refreshContent("");
 			}
@@ -323,17 +368,31 @@ public class Window
 		contentPane.add(label, BorderLayout.NORTH);
 	}
 	
-	private void MakeTextBox(JPanel panel, String title, String text, RefInt fieldId)
+	private void MoveCursorOnSelect(boolean clickedIn, String ModeType, JTextField field)
 	{
-		MakeTextBox(panel, title, new RefString(text), false, fieldId);
+		if (ModeType.equals(LangMenuRef.MODE_HIGHLIGHT))
+    	{
+    		field.select(0, field.getText().length());
+    	}
+    	else if (ModeType.equals(LangMenuRef.MODE_CURSORPRE))
+    	{
+    		field.setCaretPosition(0);
+    	}
+    	else if (ModeType.equals(LangMenuRef.MODE_CURSORPOST)) 
+    	{
+    		field.setCaretPosition(field.getText().length());
+    	}
+    	else if (!clickedIn && ModeType.equals(LangMenuRef.MODE_CURSORCLICK))
+    	{
+    		//Only reached if you hack the settings file to give SelectModeTab MODE_CURSORCLICK, which it is incapable of getting through the UI
+    		field.select(0, field.getText().length());
+    	}
 	}
 	
-	private void MakeTextBox(JPanel panel, String title, RefString text, RefInt fieldId)
-	{
-		MakeTextBox(panel, title, text, true, fieldId);
-	}
-	
-	private void MakeTextBox(JPanel panel, String title, RefString text, boolean useRef, RefInt fieldId)
+	/***
+	 * @return the display length of the longest text in
+	 */
+	private int MakeTextBox(JPanel panel, String title, Field text)
 	{
 		JLabel ider = new JLabel(title);
 		//ider.setBorder(BorderFactory.createEmptyBorder(0, res.getBorder() + 2, 0, 0));
@@ -341,25 +400,37 @@ public class Window
 		
 		JTextField label = new JTextField();
 		fontChange(label);
-		label.setText(text.value);
+		label.setText(text.getFiller());
 		label.setMaximumSize(new Dimension(res.getWidth() / 2, res.getFontSize() * 2));
+		int width = (int)ider.getFont().getStringBounds(ider.getText(), new FontRenderContext(null, false, false)).getWidth();
+		System.out.println(ider.getText() + width);
 		panel.add(label);
-		fieldId.value = panel.getComponentCount() - 1;
+		fieldUIIds.get(text).value = panel.getComponentCount() - 1;
 		label.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
-            	label.select(0, label.getText().length());
+            	if (e.getCause().equals(Cause.MOUSE_EVENT))
+            	{
+            		MoveCursorOnSelect(true, ClickSelectMode, label);
+            	}
+            	else
+            	{
+            		MoveCursorOnSelect(false, TabSelectMode, label);
+            	}
             }
 
             @Override
             public void focusLost(FocusEvent e) {
                 label.select(0, 0);
-                if (useRef)
+                text.updateCurrentFiller(((JTextField)panel.getComponent(fieldUIIds.get(text).value)).getText());
+                //This is done to enforce int only fields with like those with id i1, i2, ...
+                if (!((JTextField)panel.getComponent(fieldUIIds.get(text).value)).getText().equals(text.getCurrentFiller()))
                 {
-                	text.value = ((JTextField)panel.getComponent(fieldId.value)).getText();                	
+                	((JTextField)panel.getComponent(fieldUIIds.get(text).value)).setText(text.getCurrentFiller());
                 }
             }
         });
+		return width;
 	}
 	
 	private JButton makeButton(JPanel into, String text, String hoverMessage, ActionListener listener)
@@ -381,7 +452,7 @@ public class Window
 	
 	private void submitButton(JPanel panel)
 	{
-		makeButton(panel, Lang.lang.getUIButton(LangUIButtonsRef.SUBMIT), null, makeFilesAfterSubmit(panel, flag)).setFocusable(true);
+		makeButton(panel, Lang.lang.getUIButton(LangUIButtonsRef.SUBMIT), null, makeFilesAfterSubmit(panel, WhichOptionIsOpen.value)).setFocusable(true);
 	}
 	
 	private JPanel makeWestRegion()
@@ -395,119 +466,39 @@ public class Window
 		
 		componentList.clear();
 		
-		//NO SELECTION
-		if(flag == JsonFlag.Empty)
+		if (WhichOptionIsOpen.value.equals(""))
 		{
 			sizer.setBorder(BorderFactory.createEmptyBorder(0, res.getWidth() / 4, 0, 0));
 		    panel.add(sizer);
 		}
-		//BASIC ITEM
-		else if(flag == JsonFlag.BasicItem)
+		else
 		{
-			
-			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 40, 0, 0));
-		    panel.add(sizer);
-			
-		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.NAME), name, nameField);
-		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.TEXTURE), pref, textureField);
-		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.MOD_ID), mod_id, modidField);
-		}
-		//Tool Sets
-		else if(flag == JsonFlag.Tool)
-		{
-			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 47, 0, 0));
-		    panel.add(sizer);
-		    
-		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.SET_NAME), name, nameField);
-		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.TEXTURE_PREFIX), pref, textureField);
-		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.MOD_ID), mod_id, modidField);
-		    //postfixes
-		    JLabel ider = new JLabel(Lang.lang.getUILabel(LangUIFieldsRef.POSTFIX));
-			//ider.setBorder(BorderFactory.createEmptyBorder(0, res.getBorder() + 2, 0, 0));
-		    panel.add(ider);
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.SWORD), Lang.lang.getDefaultText(LangDefaultValueRef.SWORD), swordField);
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.AXE), Lang.lang.getDefaultText(LangDefaultValueRef.AXE), axeField);
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.SHOVEL), Lang.lang.getDefaultText(LangDefaultValueRef.SHOVEL), shovelField);
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.PICKAXE), Lang.lang.getDefaultText(LangDefaultValueRef.PICKAXE), pickaxeField);
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.HOE), Lang.lang.getDefaultText(LangDefaultValueRef.HOE), hoeField);
-			componentList.addAll(Arrays.asList(new Integer[] { swordField.value, axeField.value, shovelField.value, pickaxeField.value, hoeField.value }));
-		}
-		//armor sets
-		else if(flag == JsonFlag.Armor)
-		{
-			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 47, 0, 0));
-		    panel.add(sizer);
-		    
-		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.SET_NAME), name, nameField);
-		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.TEXTURE_PREFIX), pref, textureField);
-		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.MOD_ID), mod_id, modidField);
-		    //postfixes
-		    JLabel ider = new JLabel(Lang.lang.getUILabel(LangUIFieldsRef.POSTFIX));
-			//ider.setBorder(BorderFactory.createEmptyBorder(0, res.getBorder() + 2, 0, 0));
-			panel.add(ider);
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.HELMET), Lang.lang.getDefaultText(LangDefaultValueRef.HELMET), helmetField);
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.CHESTPLATE), Lang.lang.getDefaultText(LangDefaultValueRef.CHESTPLATE), chestplateField);
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.LEGGINGS), Lang.lang.getDefaultText(LangDefaultValueRef.LEGGINGS), leggingsField);
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.BOOTS), Lang.lang.getDefaultText(LangDefaultValueRef.BOOTS), bootsField);
-			componentList.addAll(Arrays.asList(new Integer[] { helmetField.value, chestplateField.value, leggingsField.value, bootsField.value }));
-		}
-		//blocks All
-		else if(flag == JsonFlag.Block)
-		{
-			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 40, 0, 0));
-		    panel.add(sizer);
-			
-		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.BLOCK_NAME), name, nameField);
-		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.TEXTURE), pref, textureField);
-		    MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.MOD_ID), mod_id, modidField);
-		}
-		else if(flag == JsonFlag.Flame)
-		{
-			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 40, 0, 0));
 			panel.add(sizer);
 			
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.FLAME_NAME), name, nameField);
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.TEXTURE), pref, textureField);
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.MOD_ID), mod_id, modidField);
-		}
-		else if(flag == JsonFlag.Portal)
-		{
-			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 40, 0, 0));
-			panel.add(sizer);
+			ArrayList<FieldSection> fields = FieldHandler.handler.acquireSectionsForMe(WhichOptionIsOpen.value);
+			int smallestWidth = res.getWidth();
+			int largestWidth = 0;
+			for (int i = 0; i < fields.size(); i++)
+			{
+				FieldSection section = fields.get(i);
+				String title = section.getSectionTitle();
+				if (title != "")
+				{
+					JLabel sectionTitle = new JLabel(title);
+					panel.add(sectionTitle);
+				}
+				while(section.HasNextField())
+				{
+					Field field = section.getNextField();
+					int textWidth = MakeTextBox(panel, field.getTitle(), field);
+					largestWidth = Math.max(textWidth, largestWidth);
+					smallestWidth = Math.min(textWidth, smallestWidth);
+				}
+			}
+			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - (largestWidth - smallestWidth), 0, 0));
+			System.out.println((res.getWidth() / 4) + " - " + (largestWidth - smallestWidth) + " to " + ((res.getWidth() / 4) - (largestWidth - smallestWidth)));
 			
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.BLOCK_NAME), name, nameField);
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.TEXTURE), pref, textureField);
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.MOD_ID), mod_id, modidField);
-			JLabel ider = new JLabel(Lang.lang.getUILabel(LangUIFieldsRef.POSTFIX));
-			panel.add(ider);
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.NS_POST), Lang.lang.getDefaultText(LangDefaultValueRef.NS), northSouthField);
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.EW_POST), Lang.lang.getDefaultText(LangDefaultValueRef.EW), eastWestField);
-			componentList.addAll(Arrays.asList(new Integer[] { northSouthField.value, eastWestField.value }));
-		}
-		else if(flag == JsonFlag.Pane)
-		{
-			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 76, 0, 0));
-			panel.add(sizer);
-			
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.BLOCK_NAME), name, nameField);
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.PANE_FACE), pref, textureField);
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.PANE_EDGE), paneside, sideField);
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.MOD_ID), mod_id, modidField);
-		}
-		else if(flag == JsonFlag.Stairs)
-		{
-			sizer.setBorder(BorderFactory.createEmptyBorder(0, (res.getWidth() / 4) - 40, 0, 0));
-			panel.add(sizer);
-			
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.BLOCK_NAME), name, nameField);
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.TOP_TEXTURE), top, topField);
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.BOTTOM_TEXTURE), bottom, bottomField);
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.SIDE_TEXTURE), side, sideField);
-			MakeTextBox(panel, Lang.lang.getUILabel(LangUIFieldsRef.MOD_ID), mod_id, modidField);
-		}
-		if (flag != JsonFlag.Empty)
-		{
-			submitButton(panel);			
+			submitButton(panel);
 		}
 		contentPane.add(panel, BorderLayout.WEST);
 		return panel;
@@ -573,7 +564,7 @@ public class Window
 		tabs.setTabComponentAt(index, tabPanel);
 		jsons.put(tabPanel, new InnerPreview(prev, innerOption));
 		tabMap.put(tabPanel, scroll);
-		buttonClose.addActionListener(makeCloseTabListener(tabPanel, scroll, inner, inner ? prev.getOptions().get(j) : ""));
+		buttonClose.addActionListener(makeCloseTabListener(tabPanel, scroll, inner));
 	}
 	
 	/*private void getUbiquitousText(JPanel panel)
@@ -583,7 +574,21 @@ public class Window
 		mod_id = ((JTextField)panel.getComponent(modidField.value)).getText();
 	}*/
 	
-	private ActionListener makeFilesAfterSubmit(JPanel panel, JsonFlag kind)
+	private Template findTemplateForMe(String WhoAmI)
+	{
+		Template template = null;;
+		ArrayList<Template> templates = AutoGen.gen.getTemplates();
+		for (int i = 0; i < templates.size(); i++)
+		{
+			if (templates.get(i).whoAmI().equals(WhoAmI))
+			{
+				template = templates.get(i);
+			}
+		}
+		return template;
+	}
+	
+	private ActionListener makeFilesAfterSubmit(JPanel panel, String which)
 	{
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -598,59 +603,29 @@ public class Window
 					components.add("");
 				}
 				
-				ArrayList<JsonType> fileTypes = kind.getType();
-				JsonPreview[] prevs = new JsonPreview[fileTypes.size()];
-				for (int i = 0; i < fileTypes.size(); i++)
+				Template template = findTemplateForMe(which);
+				if (template == null)
 				{
-					JsonType type = fileTypes.get(i);
-					if (type == JsonType.FLAME)
-					{
-						prevs[i] = new JsonPreview(type, name.value, pref.value, top.value, bottom.value, side.value, mod_id.value)
-								.replaceOptions(Arrays.asList(new String[] {
-										"_floor", "_floor0", "_floor1", "_side", "_side0", "_side1", "_side_alt", "_side_alt0", "_side_alt1", "_up", "_up0", "_up1", "_up_alt", "_up_alt0", "_up_alt1"
-								}));
-					}
-					else if (type == JsonType.PANE_BLOCK)
-					{
-						prevs[i] = new JsonPreview(type, name.value, pref.value, top.value, bottom.value, paneside.value, mod_id.value)
-								.replaceOptions(Arrays.asList(new String[] {
-										"_noside", "_noside_alt", "_post", "_side", "_side_alt"
-								}));
-					}
-					else if (kind == JsonFlag.Portal && type == JsonType.BLOCK_ITEM)
-					{
-						prevs[i] = new JsonPreview(type, name.value, pref.value, top.value, bottom.value, side.value, mod_id.value);
-					}
-					else if (kind == JsonFlag.Stairs && type == JsonType.BLOCK_ITEM)
-					{
-						prevs[i] = new JsonPreview(fileTypes.get(i), name.value, pref.value, top.value, bottom.value, side.value, mod_id.value).replaceOptions("stairs");
-					}
-					else
-					{
-						prevs[i] = new JsonPreview(fileTypes.get(i), name.value, pref.value, top.value, bottom.value, side.value, mod_id.value).replaceOptions(components);
-					}
+					return;
 				}
 				
-				for (int i = 0; i < prevs.length; i++)
+				JsonPreview preview = new JsonPreview(template);
+				
+				int fileCount = preview.size();
+				for (int i = 0; i < fileCount; i++)
 				{
-					String[] files = prevs[i].getFiles();
-					for(int j = 0; j < prevs[i].getOptions().size(); j++)
-					{
-						String text = files[j];
-						tabMaker(text, prevs[i], true, j);
-					}
+					tabMaker(preview.getFiles().get(i).getContents(), preview, true, i);
 				}
 			}
 		};
 	}
 	
-	private ActionListener makeCloseTabListener(Component c, Component scroll, boolean inner, String option)
+	private ActionListener makeCloseTabListener(Component c, Component scroll, boolean inner)
 	{
 		return new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				//int i = tabs.indexOfTabComponent(c.getParent());
 				if(!inner)
 				{
 					jsons.remove(c);
@@ -658,13 +633,9 @@ public class Window
 				}
 				else
 				{
-					//jsons.get(c).getOptions().remove(option);
 					jsons.get(c).remove();
-					//if(jsons.get(c).getOptions().isEmpty())
-					//{
-						jsons.remove(c);
-						tabMap.remove(c);
-					//}
+					jsons.remove(c);
+					tabMap.remove(c);
 				}
 				tabs.remove(scroll);
 			}

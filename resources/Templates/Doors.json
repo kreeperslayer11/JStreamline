@@ -1,0 +1,136 @@
+{
+    "Options": [
+        {
+            "WhoAmI": "Door",
+            "Required": [
+                {
+                    "SectionName": "",
+                    "SectionFields": [
+                        {
+                            "id": "1",
+                            "Title": "Json Name for Door",
+                            "Default": "Json Name"
+                        },
+                        {
+                            "id": "2",
+                            "Title": "Texture Name Upper Door Face",
+                            "Default": "Texture Name"
+                        },
+                        {
+                            "id": "u1",
+                            "Title": "Texture Name Lower Door Face",
+                            "Default": "Texture Name"
+                        },
+                        {
+
+                            "id": "u2",
+                            "Title": "Texture Name for BlockItem",
+                            "Default": "Texture Name"
+                        },
+                        {
+                            "id": "3",
+                            "Title": "Mod_ID",
+                            "Default": "Mod_ID"
+                        }
+                    ]
+                }
+            ],
+            "Template": [
+                {
+                    "FileName": "**1**_door",
+                    "SaveTo": "**3**/blockstates",
+                    "Contents":{
+                        "variants": {
+                            "facing=east,half=lower,hinge=left,open=false":  { "model": "**3**:**1**_door_bottom" },
+                            "facing=south,half=lower,hinge=left,open=false": { "model": "**3**:**1**_door_bottom", "y": 90 },
+                            "facing=west,half=lower,hinge=left,open=false":  { "model": "**3**:**1**_door_bottom", "y": 180 },
+                            "facing=north,half=lower,hinge=left,open=false": { "model": "**3**:**1**_door_bottom", "y": 270 },
+                            "facing=east,half=lower,hinge=right,open=false":  { "model": "**3**:**1**_door_bottom_rh" },
+                            "facing=south,half=lower,hinge=right,open=false": { "model": "**3**:**1**_door_bottom_rh", "y": 90 },
+                            "facing=west,half=lower,hinge=right,open=false":  { "model": "**3**:**1**_door_bottom_rh", "y": 180 },
+                            "facing=north,half=lower,hinge=right,open=false": { "model": "**3**:**1**_door_bottom_rh", "y": 270 },
+                            "facing=east,half=lower,hinge=left,open=true":  { "model": "**3**:**1**_door_bottom_rh", "y": 90 },
+                            "facing=south,half=lower,hinge=left,open=true": { "model": "**3**:**1**_door_bottom_rh", "y": 180 },
+                            "facing=west,half=lower,hinge=left,open=true":  { "model": "**3**:**1**_door_bottom_rh", "y": 270 },
+                            "facing=north,half=lower,hinge=left,open=true": { "model": "**3**:**1**_door_bottom_rh" },
+                            "facing=east,half=lower,hinge=right,open=true":  { "model": "**3**:**1**_door_bottom", "y": 270 },
+                            "facing=south,half=lower,hinge=right,open=true": { "model": "**3**:**1**_door_bottom" },
+                            "facing=west,half=lower,hinge=right,open=true":  { "model": "**3**:**1**_door_bottom", "y": 90 },
+                            "facing=north,half=lower,hinge=right,open=true": { "model": "**3**:**1**_door_bottom", "y": 180 },
+                            "facing=east,half=upper,hinge=left,open=false":  { "model": "**3**:**1**_door_top" },
+                            "facing=south,half=upper,hinge=left,open=false": { "model": "**3**:**1**_door_top", "y": 90 },
+                            "facing=west,half=upper,hinge=left,open=false":  { "model": "**3**:**1**_door_top", "y": 180 },
+                            "facing=north,half=upper,hinge=left,open=false": { "model": "**3**:**1**_door_top", "y": 270 },
+                            "facing=east,half=upper,hinge=right,open=false":  { "model": "**3**:**1**_door_top_rh" },
+                            "facing=south,half=upper,hinge=right,open=false": { "model": "**3**:**1**_door_top_rh", "y": 90 },
+                            "facing=west,half=upper,hinge=right,open=false":  { "model": "**3**:**1**_door_top_rh", "y": 180 },
+                            "facing=north,half=upper,hinge=right,open=false": { "model": "**3**:**1**_door_top_rh", "y": 270 },
+                            "facing=east,half=upper,hinge=left,open=true":  { "model": "**3**:**1**_door_top_rh", "y": 90 },
+                            "facing=south,half=upper,hinge=left,open=true": { "model": "**3**:**1**_door_top_rh", "y": 180 },
+                            "facing=west,half=upper,hinge=left,open=true":  { "model": "**3**:**1**_door_top_rh", "y": 270 },
+                            "facing=north,half=upper,hinge=left,open=true": { "model": "**3**:**1**_door_top_rh" },
+                            "facing=east,half=upper,hinge=right,open=true":  { "model": "**3**:**1**_door_top", "y": 270 },
+                            "facing=south,half=upper,hinge=right,open=true": { "model": "**3**:**1**_door_top" },
+                            "facing=west,half=upper,hinge=right,open=true":  { "model": "**3**:**1**_door_top", "y": 90 },
+                            "facing=north,half=upper,hinge=right,open=true": { "model": "**3**:**1**_door_top", "y": 180 }
+                        }
+                    }
+                },
+                {
+                    "FileName": "**1**_door_bottom_rh",
+                    "SaveTo": "**3**/models/block",
+                    "Contents": {
+                        "parent": "block/door_bottom_rh",
+                        "textures": {
+                            "bottom": "**3**:blocks/**u1**",
+                            "top": "**3**:blocks/**2**"
+                        }
+                    }
+                },
+                {
+                    "FileName": "**1**_door_bottom",
+                    "SaveTo": "**3**/models/block",
+                    "Contents": {
+                        "parent": "block/door_bottom",
+                        "textures": {
+                            "bottom": "**3**:blocks/**u1**",
+                            "top": "**3**:blocks/**2**"
+                        }
+                    }
+                },
+                {
+                    "FileName": "**1**_door_top_rh",
+                    "SaveTo": "**3**/models/block",
+                    "Contents": {
+                        "parent": "block/door_top_rh",
+                        "textures": {
+                            "bottom": "**3**:blocks/**u1**",
+                            "top": "**3**:blocks/**2**"
+                        }
+                    }
+                },
+                {
+                    "FileName": "**1**_door_top",
+                    "SaveTo": "**3**/models/block",
+                    "Contents": {
+                        "parent": "block/door_top",
+                        "textures": {
+                            "bottom": "**3**:blocks/**u1**",
+                            "top": "**3**:blocks/**2**"
+                        }
+                    }
+                },
+                {
+					"FileName": "**1**_door",
+					"SaveTo": "**3**/models/item",
+					"Contents": {
+						"parent": "item/generated",
+						"textures": {
+							"layer0": "**3**:items/**u2**"
+						}	
+					}
+				}
+            ]
+        }
+    ]
+}
