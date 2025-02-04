@@ -1,6 +1,6 @@
 {
     "Titles": {
-        "App Title": "JStreamline",
+        "App Title": "JStreamline 2.0",
         "Input Section": "Selections",
         "Json Output Section": "Jsons",
         "Message Area": "Message",
@@ -14,15 +14,29 @@
         "Language": "Language",
         "Exit": "Exit",
         "Resolution": "Resolution",
+        "SelectModeClick": "Click Field Modes",
+        "SelectModeTab": "Tab to Field Modes",
+		"ModeHighlight": "Highlight Text",
+		"ModeCursorPre": "Cursor Before Text",
+		"ModeCursorPost": "Cursor After Text",
+        "ModeCursorClicked": "Cursor As Clicked",
         "Json Types": "Types",
         "Basic Item Json Type": "Basic Item",
         "Tool Set Json Type": "Tool Set",
         "Armor Set Json Type": "Armor Set",
         "Block Json Type": "Blocks",
+		"Log Json Type": "Logs (wood)",
         "Fire Json Type": "Flame",
         "Portal Json Type": "Portal",
         "Glass Pane Json Type": "Glass Pane",
-        "Stairs Json Type": "Stairs"
+        "Stairs Json Type": "Stairs",
+		"Door Json Type": "Door",
+		"Fence With Gate Json Type": "Fence + Gate",
+		"Fence No Gate Json Type": "Fence (No Gate Files)",
+		"Fence Only Gate Json Type": "Fence Gates (No Fence Files)",
+		"Slab Json Type": "Slabs",
+		"Plant Json Type": "Plant",
+		"Crop Json Type": "Crop"
     },
     "Resolutions": {
         "Default Resolution": "Default"
@@ -38,15 +52,27 @@
         "Json Name for Sets": "Set Name",
         "Json Name for Blocks": "Block Name",
         "Json Name for Flames": "Flame Name",
+		"Json Name for Door": "Door Name",
+		"Json Name for Fence": "Fence Name",
+		"Json Name for Slabs": "Slab Name",
+		"Json Name for Generic": "Name",
         "Texture Name": "Texture Name",
+		"Texture Name for Cross": "Texture Name X",
         "Texture Name for Jsons with Postfixes": "Texture Prefix",
         "Mod_ID": "Mod_ID",
+		"Number of Stages": "Number of Stages",
+		"Texture Name for Fence Part": "Base Texture Name",
         "Texture Name for pane edge": "Glass Pane Edge Texture",
         "Texture Name for pane face": "Glass Pane Face Texture",
+		"Texture Name Upper Door Face": "Upper Door Face Texture",
+		"Texture Name Lower Door Face": "Lower Door Face Texture",
+		"Texture Name for BlockItem": "Item Texture",
         "Texture Name Top": "Top Texture",
         "Texture Name Bottom": "Bottom Texture",
         "Texture Name Side": "Side Texture",
         "Postfix Section Label": "Postfixes",
+		"Prefix Section Label": "Prefixes",
+		"Stage Postfix": "Stage",
         "Stairs Postfix": "Stairs",
         "Sword Postfix": "Sword",
         "Axe Postfix": "Axe",
@@ -58,14 +84,14 @@
         "Leggings Postfix": "Leggings",
         "Boots Postfix": "Boots",
         "North South Axis Name": "North South Axis Name",
-        "Ease West Axis Name": "East West Axis Name"
+        "East West Axis Name": "East West Axis Name"
     },
     "UIButtons": {
         "Save": "Save File",
         "Save As": "Save As File",
         "Generate Jsons": "Generate",
         "Message when hover over Save Button": "Saves all at last save location in proper folders",
-        "Message when hover over Save As Button": "Select the MOD_ID folder of your mod in your assets folder. Files will be saved in their proper folders",
+        "Message when hover over Save As Button": "Select the assets folder of your mod. Files will be saved in their proper folders",
         "Overwrite Checkbox": "Overwrite",
         "Generate Folders Checkbox": "Generate Folders",
         "Message when hover over Overwrite Checkbox": "Overwrite existing jsons with the same name",
@@ -87,6 +113,7 @@
         "Leggings Postfix": "leggings",
         "Boots Postfix": "boots",
         "North South Postfix": "_ns",
-        "East West Postfix": "_ew"
+        "East West Postfix": "_ew",
+		"Stage Postfix": "_stage"
     }
 }

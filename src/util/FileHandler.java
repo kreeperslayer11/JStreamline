@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 

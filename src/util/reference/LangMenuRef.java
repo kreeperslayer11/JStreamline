@@ -8,6 +8,12 @@ public class LangMenuRef
 	public static final String LANGUAGE = "Language";
 	public static final String EXIT = "Exit";
 	public static final String RESOLUTION = "Resolution";
+	public static final String SELECTMODE_CLICK = "SelectModeClick";
+	public static final String SELECTMODE_TAB = "SelectModeTab";
+	public static final String MODE_HIGHLIGHT = "ModeHighlight";
+	public static final String MODE_CURSORPRE = "ModeCursorPre";
+	public static final String MODE_CURSORPOST = "ModeCursorPost";
+	public static final String MODE_CURSORCLICK = "ModeCursorClicked";
 	public static final String TYPES = "Json Types";
 	public static final String BASIC_ITEM = "Basic Item Json Type";
 	public static final String TOOL_SET = "Tool Set Json Type";

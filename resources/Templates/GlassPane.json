@@ -1,0 +1,117 @@
+{
+	"Options": [
+		{
+			"WhoAmI": "Glass Pane",
+			"Required": [
+				{
+					"SectionName": "",
+					"SectionFields": [
+						{
+							"id": "1",
+							"Title": "Json Name for Blocks",
+							"Default": "Json Name"
+						},
+						{
+							"id": "2",
+							"Title": "Texture Name for pane face",
+							"Default": "Texture Name"
+						},
+						{
+							"id": "u1",
+							"Title": "Texture Name for pane edge",
+							"Default": "Side of Pane Texture"
+						},
+						{
+							"id": "3",
+							"Title": "Mod_ID",
+							"Default": "Mod_ID"
+						}
+					]
+				}
+			],
+			"Template": [
+				{
+					"FileName": "**1**_noside",
+					"SaveTo": "**3**/models/block",
+					"Contents":	{
+					    "parent": "block/pane_noside",
+					    "textures": {
+					        "pane": "**3**:blocks/**2**"
+					    }
+					}
+				},
+				{
+					"FileName": "**1**_noside_alt",
+					"SaveTo": "**3**/models/block",
+					"Contents": {
+					    "parent": "block/pane_noside_alt",
+					    "textures": {
+					        "pane": "**3**:blocks/**2**"
+					    }
+					}
+				},
+				{
+					"FileName": "**1**_post",
+					"SaveTo": "**3**/models/block",
+					"Contents": {
+					    "parent": "block/pane_post",
+					    "textures": {
+					        "edge": "**3**:blocks/**u1**",
+					        "pane": "**3**:blocks/**2**"
+					    }
+					}
+				},
+				{
+					"FileName": "**1**_side",
+					"SaveTo": "**3**/models/block",
+					"Contents": {
+					    "parent": "block/pane_side",
+					    "textures": {
+					        "edge": "**3**:blocks/**u1**",
+					        "pane": "**3**:blocks/**2**"
+					    }
+					}
+				},
+				{
+					"FileName": "**1**_side_alt",
+					"SaveTo": "**3**/models/block",
+					"Contents": {
+					    "parent": "block/pane_side_alt",
+					    "textures": {
+					        "edge": "**3**:blocks/**u1**",
+					        "pane": "**3**:blocks/**2**"
+					    }
+					}
+				},
+				{
+					"FileName": "**1**",
+					"SaveTo": "**3**/models/item",
+					"Contents":	{
+					    "parent": "item/generated",
+					    "textures": {
+					        "layer0": "**3**:blocks/**2**"
+					    }
+					}
+				},
+				{
+					"FileName": "**1**",
+					"SaveTo": "**3**/blockstates",
+					"Contents":	{
+					    "multipart": [
+					        { "apply": { "model": "**3**:**1**_post" } },
+					        { "when": { "north": true }, "apply": { "model": "**3**:**1**_side" } },
+					        { "when": { "east": true }, "apply": { "model": "**3**:**1**_side", "y": 90 } },
+					        { "when": { "south": true }, "apply": { "model": "**3**:**1**_side_alt" } },
+					        { "when": { "west": true }, "apply": { "model": "**3**:**1**_side_alt", "y": 90 } },
+					        { "when": { "north": false }, "apply": { "model": "**3**:**1**_noside" } },
+					        { "when": { "east": false }, "apply": { "model": "**3**:**1**_noside_alt" } },
+					        { "when": { "south": false }, "apply": { "model": "**3**:**1**_noside_alt", "y": 90 } },
+					        { "when": { "west": false }, "apply": { "model": "**3**:**1**_noside", "y": 270 } }
+					    ]
+					}
+				}
+				
+			]
+		}
+	]
+}

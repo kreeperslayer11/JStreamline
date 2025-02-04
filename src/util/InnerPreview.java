@@ -16,7 +16,7 @@ public class InnerPreview
 	public InnerPreview(JsonPreview preview, int innerOption)
 	{
 		this.preview = preview;
-		this.option = preview.getOptions().get(innerOption);
+		this.option = preview.getFileNameWithPath(innerOption);
 	}
 	
 	//Removes the inner option from the JsonPreview
@@ -27,7 +27,7 @@ public class InnerPreview
 	
 	public String getTypeFolder()
 	{
-		return preview.getType().folder;
+		return preview.getFolder(option);
 	}
 	
 	public String getFileName()

@@ -1,0 +1,336 @@
+{
+	"Options": [
+		{
+			"WhoAmI": "Fire",
+			"Required": [
+				{
+					"SectionName": "",
+					"SectionFields": [
+						{
+							"id": "1",
+							"Title": "Json Name for Flames",
+							"Default": "Json Name"
+						},
+						{
+							"id": "2",
+							"Title": "Texture Name",
+							"Default": "Texture Name"
+						},
+						{
+							"id": "3",
+							"Title": "Mod_ID",
+							"Default": "Mod_ID"
+						}	
+					]
+				}
+			],
+			"Template": [
+				{
+					"FileName": "**1**",
+					"SaveTo": "**3**/blockstates",
+					"Contents": {
+					    "multipart": [
+					        {
+					            "when": { "east": false, "south": false, "north": false, "west": false, "up": false },
+					            "apply": [ 
+									{ "model": "**3**:**1**_floor0" },
+					                { "model": "**3**:**1**_floor1" }
+					            ]
+					        },
+					        {
+					            "when": { "OR": [ { "north": true }, { "east": false, "south": false, "north": false, "west": false, "up": false } ] },
+					            "apply": [
+					                { "model": "**3**:**1**_side0" },
+					                { "model": "**3**:**1**_side1" }, 
+									{ "model": "**3**:**1**_side_alt0" }, 
+									{ "model": "**3**:**1**_side_alt1" }
+					            ]
+					        },
+					        {
+					            "when": { "OR": [ { "east": true }, { "east": false, "south": false, "north": false, "west": false, "up": false } ] },
+					            "apply": [
+					                { "model": "**3**:**1**_side0", "y": 90 },
+					                { "model": "**3**:**1**_side1", "y": 90 },
+					                { "model": "**3**:**1**_side_alt0", "y": 90 },
+					                { "model": "**3**:**1**_side_alt1", "y": 90 }
+					            ]
+					        },
+					        {
+					            "when": {
+					                "OR": [ { "south": true }, { "east": false, "south": false, "north": false, "west": false, "up": false } ] },
+					            "apply": [
+					                { "model": "**3**:**1**_side0", "y": 180 },
+					                { "model": "**3**:**1**_side1", "y": 180 },
+					                { "model": "**3**:**1**_side_alt0", "y": 180 },
+					                { "model": "**3**:**1**_side_alt1", "y": 180 }
+					            ]
+					        },
+					        {
+					            "when": { "OR": [ { "west": true }, { "east": false, "south": false, "north": false, "west": false, "up": false } ] },
+					            "apply": [
+					                { "model": "**3**:**1**_side0", "y": 270 },
+					                { "model": "**3**:**1**_side1", "y": 270 },
+					                { "model": "**3**:**1**_side_alt0", "y": 270 },
+					                { "model": "**3**:**1**_side_alt1", "y": 270 }
+					            ]
+					        },
+					        {
+					            "when": {
+					                "up": true
+					            },
+					            "apply": [
+					                { "model": "**3**:**1**_up0" },
+					                { "model": "**3**:**1**_up1" },
+					                { "model": "**3**:**1**_up_alt0" },
+					                { "model": "**3**:**1**_up_alt1" }
+					            ]
+					        }
+					    ],
+					    "variants": {
+					        "inventory": {
+					            "model": "**3**:**1**_side0"
+					        }
+					    }
+					}
+				},
+				{
+					"FileName": "**1**",
+					"SaveTo": "**3**/models/item",
+					"Contents": {
+						"parent": "**3**:block/**1**"
+					}
+				},
+				{
+					"FileName": "**1**_floor",
+					"SaveTo": "**3**/models/block",
+					"Contents": {
+					    "ambientocclusion": false,
+					    "elements": [
+					        {
+					            "from": [ 0.0, 0.0, 8.8 ],
+					            "to": [ 16.0, 22.4, 8.8 ],
+					            "rotation": { "origin": [ 8, 8, 8 ], "axis": "x", "angle": -22.5, "rescale": true },
+					            "shade": false,
+					            "faces": { "south": { "uv": [ 0, 0, 16, 16 ], "texture": "#flame" }
+					            }
+					        },
+					        {
+					            "from": [ 0.0, 0.0, 7.2 ],
+					            "to": [ 16.0, 22.4, 7.2 ],
+					            "rotation": { "origin": [ 8, 8, 8 ], "axis": "x", "angle": 22.5, "rescale": true },
+					            "shade": false,
+					            "faces": { "north": { "uv": [ 0, 0, 16, 16 ], "texture": "#flame" } }
+					        },
+					        {
+					            "from": [ 8.8, 0.0, 0.0 ],
+					            "to": [ 8.8, 22.4, 16.0 ],
+					            "rotation": { "origin": [  8, 8, 8 ], "axis": "x", "angle": -22.5, "rescale": true },
+					            "shade": false,
+					            "faces": { "west": { "uv": [ 0, 0, 16, 16 ], "texture": "#flame" } }
+					        },
+					        {
+					            "from": [ 7.2,  0.0, 0.0 ],
+					            "to": [ 7.2, 22.4, 16.0 ],
+					            "rotation": { "origin": [ 8, 8, 8 ], "axis": "x", "angle": 22.5, "rescale": true },
+					            "shade": false,
+					            "faces": { "east": { "uv": [ 0, 0, 16, 16 ], "texture": "#flame" } } }
+					    ]
+					}
+				},
+				{
+					"FileName": "**1**_floor0",
+					"SaveTo": "**3**/models/block",
+					"Contents": {
+						"parent": "**3**:block/**1**_floor",
+						"textures": {
+							"particle": "**3**:blocks/**2**_layer_0",
+							"flame": "**3**:blocks/**2**_layer_0"
+						}
+					}
+				},
+				{
+					"FileName": "**1**_floor1",
+					"SaveTo": "**3**/models/block",
+					"Contents": {
+					    "parent": "**3**:block/**1**_floor",
+					    "textures": {
+					        "particle": "**3**:blocks/**2**_layer_1",
+					        "flame": "**3**:blocks/**2**_layer_1"
+					    }
+					}
+				},
+				{
+					"FileName": "**1**_side",
+					"SaveTo": "**3**/models/block",
+					"Contents": {
+					    "ambientocclusion": false,
+					    "elements": [
+					        {
+					            "from": [ 0.0, 0.0, 0.01 ],
+					            "to": [ 16.0, 22.4, 0.01 ],
+					            "shade": false,
+					            "faces": {
+					                "south": { "uv": [ 0, 0, 16, 16 ], "texture": "#flame" },
+					                "north": { "uv": [ 0, 0, 16, 16 ], "texture": "#flame" } 
+								} 
+							}
+					    ]
+					}
+				},
+				{
+					"FileName": "**1**_side0",
+					"SaveTo": "**3**/models/block",
+					"Contents": {
+					    "parent": "**3**:block/**1**_side",
+					    "textures": {
+					        "particle": "**3**:blocks/**2**_layer_0",
+					        "flame": "**3**:blocks/**2**_layer_0"
+					    }
+					}
+				},
+				{
+					"FileName": "**1**_side1",
+					"SaveTo": "**3**/models/block",
+					"Contents": {
+					    "parent": "**3**:block/**1**_side",
+					    "textures": {
+					        "particle": "**3**:blocks/**2**_layer_1",
+					        "flame": "**3**:blocks/**2**_layer_1"
+					    }
+					}
+				},
+				{
+					"FileName": "**1**_side_alt",
+					"SaveTo": "**3**/models/block",
+					"Contents": {
+					    "ambientocclusion": false,
+					    "elements": [
+					        {
+					            "from": [  0.0, 0.0, 0.01 ],
+					            "to": [ 16.0, 22.4, 0.01 ],
+					            "shade": false,
+					            "faces": {
+					                "south": { "uv": [ 16, 0, 0, 16 ], "texture": "#flame" },
+					                "north": { "uv": [ 16, 0, 0, 16 ], "texture": "#flame" }
+					            } 
+							}
+					    ]
+					}
+				},
+				{
+					"FileName": "**1**_side_alt0",
+					"SaveTo": "**3**/models/block",
+					"Contents":	{
+					    "parent": "**3**:block/**1**_side_alt",
+					    "textures": {
+					        "particle": "**3**:blocks/**2**_layer_0",
+					        "flame": "**3**:blocks/**2**_layer_0"
+					    }
+					}
+				},
+				{
+					"FileName": "**1**_side_alt1",
+					"SaveTo": "**3**/models/block",
+					"Contents": {
+					    "parent": "**3**:block/**1**_side_alt",
+					    "textures": {
+					        "particle": "**3**:blocks/**2**_layer_1",
+					        "flame": "**3**:blocks/**2**_layer_1"
+					    }
+					}
+				},
+				{
+					"FileName": "**1**_up",
+					"SaveTo": "**3**/models/block",
+					"Contents": {
+					    "ambientocclusion": false,
+					    "elements": [
+					        {
+					            "from": [ 0.0, 16.0, 0.0 ],
+					            "to": [ 16.0, 16.0, 16.0 ],
+					            "rotation": { "origin": [ 16, 16, 8 ], "axis": "z", "angle": 22.5, "rescale": true },
+					            "shade": false,
+					            "faces": { "down": { "rotation": 270, "uv": [ 0, 0, 16, 16 ], "texture": "#flame" } }
+					        },
+					        {
+					            "from": [  0.0, 16.0, 0.0 ],
+					            "to": [ 16.0, 16.0, 16.0 ],
+					            "rotation": { "origin": [ 0, 16, 8 ], "axis": "z", "angle": -22.5, "rescale": true },
+					            "shade": false,
+					            "faces": { "down": { "rotation": 90, "uv": [ 0, 0, 16, 16 ], "texture": "#flame" } }
+					        }
+					    ]
+					}
+				},
+				{
+					"FileName": "**1**_up0",
+					"SaveTo": "**3**/models/block",
+					"Contents":	{
+					    "parent": "**3**:block/**1**_up",
+					    "textures": {
+					        "particle": "**3**:blocks/**2**_layer_0",
+					        "flame": "**3**:blocks/**2**_layer_0"
+					    }
+					}
+				},
+				{
+					"FileName": "**1**_up1",
+					"SaveTo": "**3**/models/block",
+					"Contents": 	{
+					    "parent": "**3**:block/**1**_up",
+					    "textures": {
+					        "particle": "**3**:blocks/**2**_layer_1",
+					        "flame": "**3**:blocks/**2**_layer_1"
+					    }
+					}
+				},
+				{
+					"FileName": "**1**_up_alt",
+					"SaveTo": "**3**/models/block",
+					"Contents":	{
+					    "ambientocclusion": false,
+					    "elements": [
+					        {
+					            "from": [ 0.0, 16.0, 0.0 ],
+					            "to": [ 16.0, 16.0, 16.0 ],
+					            "rotation": { "origin": [ 8, 16, 16 ], "axis": "x", "angle": -22.5, "rescale": true },
+					            "shade": false,
+					            "faces": { "down": { "rotation": 180, "uv": [ 0, 0, 16, 16 ], "texture": "#flame" } }
+					        },
+					        {
+					            "from": [ 0.0, 16.0, 0.0 ],
+					            "to": [ 16.0, 16.0, 16.0 ],
+					            "rotation": { "origin": [ 8, 16, 0 ], "axis": "x", "angle": 22.5, "rescale": true },
+					            "shade": false,
+					            "faces": { "down": { "uv": [ 0, 0, 16, 16 ], "texture": "#flame" } }
+					        }
+					    ]
+					}
+				},
+				{
+					"FileName": "**1**_up_alt0",
+					"SaveTo": "**3**/models/block",
+					"Contents":	{
+					    "parent": "**3**:block/**1**_up_alt",
+					    "textures": {
+					        "particle": "**3**:blocks/**2**_layer_0",
+					        "flame": "**3**:blocks/**2**_layer_0"
+					    }
+					}
+				},
+				{
+					"FileName": "**1**_up_alt1",
+					"SaveTo": "**3**/models/block",
+					"Contents": 	{
+					    "parent": "**3**:block/**1**_up_alt",
+					    "textures": {
+					        "particle": "**3**:blocks/**2**_layer_1",
+					        "flame": "**3**:blocks/**2**_layer_1"
+					    }
+					}
+				}
+				
+			]
+		}
+	]
+}
