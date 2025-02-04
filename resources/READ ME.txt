@@ -49,8 +49,8 @@ Each Option object contains 3 things
 				"2" is used for the "Texture Name" field
 				"3" is used for the "Mod_ID" field
 
-			b.	any value begining with "i" will be an iterator field
-				this allows you to create a dynamic number of similiar lines
+			b.	any value beginning with "i" will be an iterator field
+				this allows you to create a dynamic number of similar lines
 
 				iterator fields only take integer input
 				
@@ -114,10 +114,10 @@ Each Option object contains 3 things
 		you would have a Contents object like so:
 
 		"Contents": {
-			"parent": "**3**:block/"**1**"
+			"parent": "**3**:block/**1**"
 		}
 
-	Ther exists a 4th object that becomes needed when you have an iterate id (starting with "i")
+	There exists a 4th object that becomes needed when you have an iterate id (starting with "i")
 	4. "Iterate" array
 		This is an array of objects denoting what the iterate id field will iterate over. it has 2 items
 		1. "For" - the id of the field
